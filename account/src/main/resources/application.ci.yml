@@ -1,0 +1,25 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+  config:
+    import: optional:configserver:   # 👈 ESTA ES LA CLAVE
+
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+      - org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration
+eureka:
+  client:
+    enabled: false
+
+server:
+  port: 0

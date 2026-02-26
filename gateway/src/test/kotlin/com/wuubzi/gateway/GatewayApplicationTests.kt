@@ -10,4 +10,9 @@ class GatewayApplicationTests {
 	fun contextLoads() {
 	}
 
+	@Test
+	fun test() {
+		println("test")
+	}
+
 }

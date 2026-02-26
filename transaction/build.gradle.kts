@@ -34,6 +34,7 @@ dependencies {
 	implementation("tools.jackson.module:jackson-module-kotlin")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
+	testImplementation("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
@@ -62,4 +63,9 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	systemProperty("spring.flyway.enabled", "false")
+	systemProperty("spring.datasource.url", "jdbc:h2:mem:testdb")
+	systemProperty("spring.datasource.driver-class-name", "org.h2.Driver")
+	systemProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect")
 }
+

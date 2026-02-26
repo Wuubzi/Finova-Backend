@@ -33,6 +33,7 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("tools.jackson.module:jackson-module-kotlin")
+	testImplementation("com.h2database:h2")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
@@ -60,8 +61,15 @@ allOpen {
 	annotation("jakarta.persistence.Entity")
 	annotation("jakarta.persistence.MappedSuperclass")
 	annotation("jakarta.persistence.Embeddable")
+
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	systemProperty("spring.flyway.enabled", "false")
+	systemProperty("spring.datasource.url", "jdbc:h2:mem:testdb")
+	systemProperty("spring.datasource.driver-class-name", "org.h2.Driver")
+	systemProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect")
 }
+
+

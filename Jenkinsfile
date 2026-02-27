@@ -1,9 +1,5 @@
-pipeline {  
+pipeline {
     agent any
-
-    tools {
-        jdk 'JDK17'
-    }
 
     environment {
         PROJECT_NAME = 'Finova-Backend'

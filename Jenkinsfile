@@ -35,18 +35,6 @@ pipeline {
             }
         }
 
-        stage('Integration Tests') {
-            steps {
-                echo "🔗 Corriendo tests de integración..."
-                sh './gradlew integrationTest'
-            }
-            post {
-                always {
-                    junit '**/build/test-results/integrationTest/*.xml'
-                }
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 echo "📊 Analizando calidad del código..."

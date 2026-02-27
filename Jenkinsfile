@@ -35,23 +35,28 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo "📊 Analizando calidad del código..."
-                withSonarQubeEnv('SonarQube') {
-                    sh './gradlew sonar'
-                }
-            }
-        }
+     stage('SonarQube Analysis') {
+         steps {
+             echo "📊 Analizando calidad del código..."
+             withSonarQubeEnv('SonarQube') {
+                 sh """
+                     ${tool 'SonarScanner'}/bin/sonar-scanner \
+                     -Dsonar.projectKey=finova-backend \
+                     -Dsonar.projectName=Finova-Backend \
+                     -Dsonar.sources=. \
+                     -Dsonar.java.binaries=**/build/classes
+                 """
+             }
+         }
+     }
 
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+     stage('Quality Gate') {
+         steps {
+             timeout(time: 5, unit: 'MINUTES') {
+                 waitForQualityGate abortPipeline: true
+             }
+         }
+     }
 
     }
 

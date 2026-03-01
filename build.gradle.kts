@@ -10,6 +10,7 @@ version = "0.0.1-SNAPSHOT"
 description = "Demo project for Spring Boot"
 
 
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
@@ -23,6 +24,8 @@ repositories {
 tasks.named("bootJar") {
 	enabled = false
 }
+
+
 
 tasks.named("jar") {
 	enabled = true

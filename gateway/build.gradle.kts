@@ -8,6 +8,8 @@ plugins {
 group = "com.wuubzi"
 version = "0.0.1-SNAPSHOT"
 description = "a microservices api about finacies app"
+extra["wiremockVersion"] = "4.0.0-beta.29"
+extra["webtestclientVersion"] = "4.1.0-M2"
 
 java {
 	toolchain {
@@ -31,10 +33,10 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("org.springframework.boot:spring-boot-webtestclient:4.1.0-M2")
+	implementation("org.springframework.boot:spring-boot-webtestclient:${property("webtestclientVersion")}")
 	testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
 	testImplementation("io.projectreactor:reactor-test")
-	testImplementation("org.wiremock:wiremock:4.0.0-beta.29")
+	testImplementation("org.wiremock:wiremock:${property("wiremockVersion")}")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

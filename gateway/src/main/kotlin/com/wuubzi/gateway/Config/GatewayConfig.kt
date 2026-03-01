@@ -11,7 +11,10 @@ class GatewayConfig {
     @Bean
     fun routes(builder: RouteLocatorBuilder): RouteLocator {
         return builder.routes()
-            .route("auth") { r -> r.path("/auth/**").uri("http://localhost:8010") }
+            .route("auth") { r -> r.path("api/v1/auth/**").uri("http://localhost:8010") }
+            .route("user") { r -> r.path("api/v1/user/**").uri("http://localhost:8020") }
+            .route("transaction") { r -> r.path("api/v1/transaction/**").uri("http://localhost:8030") }
+            .route("account") { r -> r.path("api/v1/account/**").uri("http://localhost:8040")  }
             .build()
     }
 

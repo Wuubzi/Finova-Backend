@@ -10,6 +10,7 @@ version = "0.0.1-SNAPSHOT"
 description = "a microservices api about finacies app"
 extra["wiremockVersion"] = "4.0.0-beta.29"
 extra["webtestclientVersion"] = "4.1.0-M2"
+extra["jwtVersion"] = "0.13.0"
 
 java {
 	toolchain {
@@ -33,7 +34,9 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.boot:spring-boot-webtestclient:${property("webtestclientVersion")}")
-	implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+	implementation("io.jsonwebtoken:jjwt-api:${property("jwtVersion")}")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:${property("jwtVersion")}")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:${property("jwtVersion")}")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
 	testImplementation("io.projectreactor:reactor-test")
@@ -41,8 +44,6 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
-	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
 
 }
 

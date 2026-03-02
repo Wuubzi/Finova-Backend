@@ -2,7 +2,6 @@ package com.wuubzi.auth
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(
 	properties = [
@@ -16,5 +15,6 @@ class AuthApplicationTests {
 
 	@Test
 	fun contextLoads() {
+		//this function is empty
 	}
 }

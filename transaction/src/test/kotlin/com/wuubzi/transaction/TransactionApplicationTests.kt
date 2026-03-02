@@ -15,6 +15,7 @@ class TransactionApplicationTests {
 
 	@Test
 	fun contextLoads() {
+		//this function is empty
 	}
 
 }

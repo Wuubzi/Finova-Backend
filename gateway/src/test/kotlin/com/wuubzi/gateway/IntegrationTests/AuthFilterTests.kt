@@ -33,7 +33,7 @@ class AuthFilterTests(
 ) {
 
     companion object {
-        const val URL_USER = "/api/v1/user"
+        const val URL_USER = "/api/v1/user/"
         val wireMockServer = WireMockServer(7001)
 
         @JvmStatic

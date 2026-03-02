@@ -1,9 +1,6 @@
 package com.wuubzi.gateway.Filters
 
 import io.jsonwebtoken.JwtException
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.security.Keys
-import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.cloud.gateway.filter.GlobalFilter
 import org.springframework.http.HttpStatus
@@ -15,8 +12,8 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wuubzi.gateway.Security.JwtService
-import java.nio.charset.StandardCharsets
 
+@Suppress("Kotlin:S6508")
 @Component
 class AuthFilter(
     private val jwtService: JwtService,

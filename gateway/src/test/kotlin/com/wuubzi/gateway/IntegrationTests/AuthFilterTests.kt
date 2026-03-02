@@ -32,36 +32,8 @@ class AuthFilterTests(
     @Autowired private val webTestClient: WebTestClient
 ) {
 
-    @TestConfiguration
-    class TestRoutesConfig {
-        @Bean("routes")
-        fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
-            return builder.routes()
-                // Ruta pública — sin AuthFilter
-                .route("auth") { r ->
-                    r.path("/api/v1/auth/**").uri("http://localhost:7001")
-                }
-                // Ruta protegida — con AuthFilter
-                .route("users") { r ->
-                    r.path("/api/v1/user/**")
-                        .uri("http://localhost:7001")
-                }
-                .build()
-        }
-    }
-
-    private val secret = "my-super-secret-key-my-super-secret-key"
-    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
-
-    private fun generateValidToken(): String {
-        return Jwts.builder()
-            .subject("carlos")
-            .expiration(Date(System.currentTimeMillis() + 60000))
-            .signWith(key)
-            .compact()
-    }
-
     companion object {
+        const val URL_USER = "/api/v1/user"
         val wireMockServer = WireMockServer(7001)
 
         @JvmStatic
@@ -95,6 +67,38 @@ class AuthFilterTests(
         }
     }
 
+
+
+    @TestConfiguration
+    class TestRoutesConfig {
+        @Bean("routes")
+        fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
+            return builder.routes()
+                // Ruta pública — sin AuthFilter
+                .route("auth") { r ->
+                    r.path("/api/v1/auth/**").uri("http://localhost:7001")
+                }
+                // Ruta protegida — con AuthFilter
+                .route("users") { r ->
+                    r.path("/api/v1/user/**")
+                        .uri("http://localhost:7001")
+                }
+                .build()
+        }
+    }
+
+    private val secret = "my-super-secret-key-my-super-secret-key"
+    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
+
+    private fun generateValidToken(): String {
+        return Jwts.builder()
+            .subject("carlos")
+            .expiration(Date(System.currentTimeMillis() + 60000))
+            .signWith(key)
+            .compact()
+    }
+
+
     @Test
     fun loginEndpointShouldNotRequireAuthentication() {
         webTestClient.get()
@@ -106,7 +110,7 @@ class AuthFilterTests(
     @Test
     fun shouldReturn401ForUnauthorized() {
         webTestClient.get()
-            .uri("/api/v1/user/")
+            .uri(URL_USER)
             .exchange()
             .expectStatus().isUnauthorized()
             .expectBody()
@@ -116,7 +120,7 @@ class AuthFilterTests(
     @Test
     fun shouldReturn401WhenTokenIsInvalid() {
         webTestClient.get()
-            .uri("/api/v1/user/")
+            .uri(URL_USER)
             .header("Authorization", "Bearer invalid-token")
             .exchange()
             .expectStatus().isUnauthorized()
@@ -126,7 +130,7 @@ class AuthFilterTests(
     fun shouldReturn200WhenTokenIsValid() {
         val token = generateValidToken()
         webTestClient.get()
-            .uri("/api/v1/user/")
+            .uri(URL_USER)
             .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk()

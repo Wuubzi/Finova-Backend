@@ -34,7 +34,6 @@ class JwtServiceTest {
 
     @Test
     fun shouldThrowExceptionForInvalidToken() {
-        val invalidToken = ""
         assertThrows(JwtException::class.java) {
             jwtService.validateToken("invalid-token")
         }

@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "2.2.21"
 	id("org.springframework.boot") version "4.0.3"
 	id("io.spring.dependency-management") version "1.1.7"
+	jacoco
 }
 
 group = "com.wuubzi"
@@ -10,6 +11,7 @@ version = "0.0.1-SNAPSHOT"
 description = "a microservices api about finacies app"
 extra["wiremockVersion"] = "4.0.0-beta.29"
 extra["webtestclientVersion"] = "4.1.0-M2"
+extra["jwtVersion"] = "0.13.0"
 
 java {
 	toolchain {
@@ -33,6 +35,9 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("org.springframework.boot:spring-boot-webtestclient:${property("webtestclientVersion")}")
+	implementation("io.jsonwebtoken:jjwt-api:${property("jwtVersion")}")
+	runtimeOnly("io.jsonwebtoken:jjwt-impl:${property("jwtVersion")}")
+	runtimeOnly("io.jsonwebtoken:jjwt-jackson:${property("jwtVersion")}")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
 	testImplementation("io.projectreactor:reactor-test")
@@ -40,6 +45,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 }
 
 dependencyManagement {
@@ -56,4 +62,32 @@ kotlin {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.withType<Test>())
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+
+	// Excluir archivos de test del reporte de cobertura
+	classDirectories.setFrom(
+		files(classDirectories.files.map {
+			fileTree(it) {
+				exclude(
+					"**/*Test.class",
+					"**/*Tests.class",
+					"**/*Test$*.class",
+					"**/*TestKt.class",
+					// Excluir clases de configuración si no quieres cubrirlas
+					"**/config/**",
+					// Excluir la clase principal de Spring Boot
+					"**/*Application.class",
+					"**/*ApplicationKt.class"
+				)
+			}
+		})
+	)
 }

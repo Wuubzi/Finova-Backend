@@ -26,7 +26,7 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 echo "🧪 Corriendo tests unitarios..."
-                sh './gradlew test'
+                sh './gradlew test jacocoTestReport'
             }
             post {
                 always {
@@ -39,14 +39,15 @@ pipeline {
          steps {
              echo "📊 Analizando calidad del código..."
              withSonarQubeEnv('SonarQube') {
-                 sh """
-                     ${tool 'SonarScanner'}/bin/sonar-scanner \
-                     -Dsonar.projectKey=finova-backend \
-                     -Dsonar.projectName=Finova-Backend \
-                     -Dsonar.sources=. \
-                     -Dsonar.java.binaries=**/build/classes
-                 """
-             }
+                                 sh """
+                                     ${tool 'SonarScanner'}/bin/sonar-scanner \
+                                     -Dsonar.projectKey=finova-backend \
+                                     -Dsonar.projectName=Finova-Backend \
+                                     -Dsonar.sources=. \
+                                     -Dsonar.java.binaries=**/build/classes \
+                                     -Dsonar.coverage.jacoco.xmlReportPaths=**/build/reports/jacoco/test/jacocoTestReport.xml
+                                 """
+                             }
          }
      }
 

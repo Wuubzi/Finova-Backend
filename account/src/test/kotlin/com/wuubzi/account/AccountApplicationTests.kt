@@ -15,6 +15,7 @@ class AccountApplicationTests {
 
 	@Test
 	fun contextLoads() {
+		//this functions is empty
 	}
 
 }

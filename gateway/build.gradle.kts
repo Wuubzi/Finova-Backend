@@ -71,4 +71,23 @@ tasks.jacocoTestReport {
 		xml.required.set(true)
 		html.required.set(true)
 	}
+
+	// Excluir archivos de test del reporte de cobertura
+	classDirectories.setFrom(
+		files(classDirectories.files.map {
+			fileTree(it) {
+				exclude(
+					"**/*Test.class",
+					"**/*Tests.class",
+					"**/*Test$*.class",
+					"**/*TestKt.class",
+					// Excluir clases de configuración si no quieres cubrirlas
+					"**/config/**",
+					// Excluir la clase principal de Spring Boot
+					"**/*Application.class",
+					"**/*ApplicationKt.class"
+				)
+			}
+		})
+	)
 }

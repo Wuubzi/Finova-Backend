@@ -19,7 +19,6 @@ import com.wuubzi.auth.application.Ports.`in`.LogoutUseCase
 import com.wuubzi.auth.application.Ports.`in`.RecoverPasswordUseCase
 import com.wuubzi.auth.application.Ports.`in`.RefreshTokenUseCase
 import com.wuubzi.auth.application.Ports.`in`.ValidateOTPUseCase
-import com.wuubzi.auth.application.Services.RecoverPasswordService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid

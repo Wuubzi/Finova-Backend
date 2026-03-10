@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "4.0.3"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.2.21"
+	jacoco
 }
 
 group = "com.wuubzi"
@@ -81,3 +82,36 @@ tasks.withType<Test> {
 }
 
 
+
+
+tasks.withType<Test> {
+	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.withType<Test>())
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+
+	// Excluir archivos de test del reporte de cobertura
+	classDirectories.setFrom(
+		files(classDirectories.files.map {
+			fileTree(it) {
+				exclude(
+					"**/*Test.class",
+					"**/*Tests.class",
+					"**/*Test$*.class",
+					"**/*TestKt.class",
+					// Excluir clases de configuración si no quieres cubrirlas
+					"**/config/**",
+					// Excluir la clase principal de Spring Boot
+					"**/*Application.class",
+					"**/*ApplicationKt.class"
+				)
+			}
+		})
+	)
+}

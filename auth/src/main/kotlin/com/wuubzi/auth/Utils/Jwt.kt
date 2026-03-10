@@ -11,7 +11,6 @@ import java.util.Base64
 import java.util.Date
 import java.util.UUID
 import javax.crypto.SecretKey
-import kotlin.math.exp
 
 private const val EXPIRATION_TIME = 15 * 60 * 1000
 

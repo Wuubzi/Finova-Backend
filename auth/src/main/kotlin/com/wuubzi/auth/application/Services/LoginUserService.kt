@@ -26,7 +26,7 @@ class LoginUserService(
        val user = userCredentialsRepository.findByEmail(userLogin.email)
             ?: throw IllegalArgumentException("User with email ${userLogin.email} not found")
 
-        if (passwordEncoder.matches(userLogin.password, user.password ?: "")) {
+        if (passwordEncoder.matches(userLogin.password, user.password)) {
             val refreshToken = jwtPort.generateRefreshToken()
             val expiresAt = Instant.now().plusMillis(EXPIRATION_TIME.toLong())
             val refreshTokenSave  = RefreshToken(

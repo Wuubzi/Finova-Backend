@@ -29,7 +29,7 @@ class CreateUserService(
             id = idCredentials,
             userId = userId,
             email = userRequest.email,
-            password = passwordEncoder.encode(userRequest.password ?: ""),
+            password = passwordEncoder.encode(userRequest.password),
             role = "USER",
             isActive = true,
             createdAt = java.sql.Timestamp(System.currentTimeMillis())

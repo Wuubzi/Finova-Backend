@@ -1,5 +1,5 @@
 package com.wuubzi.auth.application.Ports.`in`
 
-interface LogoutUseCase {
+fun interface LogoutUseCase {
     fun logout(refreshToken: String)
 }

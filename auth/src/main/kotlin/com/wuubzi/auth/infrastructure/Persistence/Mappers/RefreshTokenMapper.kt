@@ -10,7 +10,7 @@ fun RefreshToken.toEntity(): RefreshTokenEntity {
         token = this@toEntity.token
         expiresAt = this@toEntity.expiresAt
         isRevoked = this@toEntity.isRevoked
-        createdAt = this@toEntity.createdAt!!
+        createdAt = this@toEntity.createdAt
     }
 }
 

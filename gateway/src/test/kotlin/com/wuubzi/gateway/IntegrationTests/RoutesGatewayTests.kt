@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.test.context.ActiveProfiles
 import reactor.test.StepVerifier
 
+const val api_url = "http://localhost:7001"
+
 @ActiveProfiles("test")
 @SpringBootTest
 class RoutesGatewayTests {
@@ -22,10 +24,10 @@ class RoutesGatewayTests {
         @Bean
         fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
             return builder.routes()
-                .route("auth") { it.path("/api/v1/auth/**").uri("http://localhost:7001") }
-                .route("user") { it.path("/api/v1/user/**").uri("http://localhost:7001") }
-                .route("transaction") { it.path("/api/v1/transaction/**").uri("http://localhost:7001") }
-                .route("account") { it.path("/api/v1/account/**").uri("http://localhost:7001") }
+                .route("auth") { it.path("/api/v1/auth/**").uri(api_url) }
+                .route("user") { it.path("/api/v1/user/**").uri(api_url) }
+                .route("transaction") { it.path("/api/v1/transaction/**").uri(api_url) }
+                .route("account") { it.path("/api/v1/account/**").uri(api_url) }
                 .build()
         }
     }

@@ -19,11 +19,11 @@ class ChangePasswordService(
 
         val canChangePassword = cachePort.get("reset-password-token:${changePasswordRequest.email}")
 
-        if (canChangePassword != changePasswordRequest.resetToken) {
+        require(canChangePassword != changePasswordRequest.resetToken) {
             throw IllegalArgumentException("Invalid or expired reset token")
         }
 
-        if (changePasswordRequest.password != changePasswordRequest.confirmPassword) {
+        require(changePasswordRequest.password != changePasswordRequest.confirmPassword) {
             throw IllegalArgumentException("Passwords do not match")
         }
 

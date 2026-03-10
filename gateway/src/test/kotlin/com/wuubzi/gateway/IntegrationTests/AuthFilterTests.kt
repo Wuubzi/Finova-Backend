@@ -5,11 +5,9 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient

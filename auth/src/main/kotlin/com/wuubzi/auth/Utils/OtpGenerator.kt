@@ -13,7 +13,7 @@ class OtpGenerator {
 
     public fun generateOtp(): String {
         return IntStream.range(0, OTP_LENGTH)
-            .mapToObj { i -> secureRandom.nextInt(10).toString() }
+            .mapToObj { _ -> secureRandom.nextInt(10).toString() }
             .collect(Collectors.joining())
     }
 }

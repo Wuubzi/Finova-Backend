@@ -4,5 +4,5 @@ import com.wuubzi.auth.domain.models.UserCredentials
 
 interface UserCredentialsRepositoryPort {
     fun save(userCredentials: UserCredentials): UserCredentials
-    fun findByEmail(username: String): UserCredentials?
+    fun findByEmail(email: String?): UserCredentials?
 }

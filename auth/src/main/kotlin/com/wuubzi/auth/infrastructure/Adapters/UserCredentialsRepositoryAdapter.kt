@@ -13,5 +13,5 @@ class UserCredentialsRepositoryAdapter(
 ): UserCredentialsRepositoryPort{
     override fun save(userCredentials: UserCredentials): UserCredentials = userCredentialsRepository.save(userCredentials.toEntity()).toDomain()
 
-    override fun findByEmail(email: String): UserCredentials?  = userCredentialsRepository.findByEmail(email)?.toDomain()
+    override fun findByEmail(email: String?): UserCredentials?  = userCredentialsRepository.findByEmail(email)?.toDomain()
 }

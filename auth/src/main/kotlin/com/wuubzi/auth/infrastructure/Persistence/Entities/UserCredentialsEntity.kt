@@ -2,21 +2,19 @@ package com.wuubzi.auth.infrastructure.Persistence.Entities
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.sql.Timestamp
+import java.util.UUID
 
 @Entity
 @Table(name = "user_credentials")
 class UserCredentialsEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
+    var id: UUID? = null
      @Column(name = "user_id")
-    var userId: Long? = null
+    var userId: UUID? = null
     var email: String? = null
     var password: String? = null
     var role: String? = null

@@ -1,4 +1,4 @@
-package com.wuubzi.auth.infrastructure.Persistence.DTOS.Response
+package com.wuubzi.auth.application.DTOS.Response
 
 data class ErrorResponse (
     var message: String? = null,

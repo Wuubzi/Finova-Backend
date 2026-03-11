@@ -22,6 +22,8 @@ import com.wuubzi.auth.application.Ports.`in`.ValidateOTPUseCase
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
+import org.apache.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -41,14 +43,16 @@ class AuthController(
 ){
 
     @PostMapping("register")
-    fun register(@Valid @RequestBody userRequest: UserRequest, request: HttpServletRequest ): Response {
+    fun register(@Valid @RequestBody userRequest: UserRequest, request: HttpServletRequest ): ResponseEntity<Response> {
         register.createUser(userRequest)
-        return Response (
+        val responseBody = Response (
             message = "Usuario registrado exitosamente",
             url = request.requestURL.toString(),
             code = HttpServletResponse.SC_CREATED,
             timestamp = dateFormatter.getDate()
         )
+
+        return ResponseEntity.status(HttpStatus.SC_CREATED).body(responseBody)
     }
 
     @PostMapping("login")
@@ -60,7 +64,7 @@ class AuthController(
             url = request.requestURL.toString(),
             token = tokenResponse.accessToken,
             refreshToken = tokenResponse.refreshToken,
-            code = HttpServletResponse.SC_CREATED,
+            code = HttpServletResponse.SC_OK,
             timestamp = dateFormatter.getDate()
         )
     }

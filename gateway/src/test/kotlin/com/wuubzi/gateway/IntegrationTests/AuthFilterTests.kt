@@ -27,11 +27,10 @@ class AuthFilterTests(
     @Autowired private val webTestClient: WebTestClient
 ) {
 
-
+    @Value($$"${jwt.secret}")
+    lateinit var secret: String
 
     companion object {
-        @Value($$"${jwt.secret}")
-        lateinit var secret: String
         const val URL_USER = "/api/v1/user/"
         val wireMockServer = WireMockServer(7001)
 
@@ -85,9 +84,9 @@ class AuthFilterTests(
                 .build()
         }
     }
-    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
 
     private fun generateValidToken(): String {
+        val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
         return Jwts.builder()
             .subject("carlos")
             .expiration(Date(System.currentTimeMillis() + 60000))

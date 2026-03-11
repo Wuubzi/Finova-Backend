@@ -12,15 +12,13 @@ import java.nio.charset.StandardCharsets
 import java.util.Date
 import kotlin.test.assertEquals
 
+private const val TEST_SECRET = "dGVzdC1zZWNyZXQta2V5LXRlc3Qtc2VjcmV0LWtleQ==y"
 @ActiveProfiles("test")
 class JwtServiceTest {
+    
 
-    @Value($$"${jwt.secret}")
-    lateinit var secret: String
-
-
-    private val jwtService = JwtService(secret)
-    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
+    private val jwtService = JwtService(TEST_SECRET)
+    private val key = Keys.hmacShaKeyFor(TEST_SECRET.toByteArray(StandardCharsets.UTF_8))
 
     private fun generateValidToken(): String {
         return Jwts.builder()

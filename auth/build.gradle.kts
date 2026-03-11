@@ -89,6 +89,7 @@ tasks.withType<Test> {
 	finalizedBy(tasks.jacocoTestReport)
 }
 
+
 tasks.jacocoTestReport {
 	dependsOn(tasks.withType<Test>())
 	reports {
@@ -114,3 +115,4 @@ tasks.jacocoTestReport {
 		})
 	)
 }
+

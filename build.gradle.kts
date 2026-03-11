@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "2.2.21"
 	id("org.springframework.boot") version "4.0.3"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.sonarqube") version "4.4.1.3373"
 }
 
 group = "com.wuubzi"
@@ -42,6 +43,15 @@ dependencies {
 kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict", "-Xannotation-default-target=param-property")
+	}
+}
+
+sonarqube {
+	properties {
+		property(
+			"sonar.coverage.exclusions",
+			"**/dto/**, **/dtos/**"
+		)
 	}
 }
 

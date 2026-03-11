@@ -105,9 +105,8 @@ tasks.jacocoTestReport {
 					"**/*Tests.class",
 					"**/*Test$*.class",
 					"**/*TestKt.class",
-					// Excluir clases de configuración si no quieres cubrirlas
 					"**/config/**",
-					// Excluir la clase principal de Spring Boot
+					"**/DTOS/**",
 					"**/*Application.class",
 					"**/*ApplicationKt.class"
 				)

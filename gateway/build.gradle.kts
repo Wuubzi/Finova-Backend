@@ -72,7 +72,7 @@
 			html.required.set(true)
 		}
 
-		// Excluir archivos de test del reporte de cobertura
+
 		classDirectories.setFrom(
 			files(classDirectories.files.map {
 				fileTree(it) {

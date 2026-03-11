@@ -1,5 +1,6 @@
-package com.wuubzi.auth.Utils
+package com.wuubzi.auth.TestUnits.Utils
 
+import com.wuubzi.auth.Utils.DateFormatter
 import org.junit.jupiter.api.Test
 
 class DateFormatterTest {

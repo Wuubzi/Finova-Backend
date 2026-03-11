@@ -17,7 +17,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import java.sql.Timestamp
 import java.util.UUID
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers
 @ActiveProfiles("test")
 @Import(UserCredentialsRepositoryAdapter::class)

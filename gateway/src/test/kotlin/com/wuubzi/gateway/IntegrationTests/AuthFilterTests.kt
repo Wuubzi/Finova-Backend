@@ -30,7 +30,7 @@ class AuthFilterTests(
 
 
     companion object {
-        @Value("\${jwt.secret}")
+        @Value($$"${jwt.secret}")
         lateinit var secret: String
         const val URL_USER = "/api/v1/user/"
         val wireMockServer = WireMockServer(7001)
@@ -85,8 +85,6 @@ class AuthFilterTests(
                 .build()
         }
     }
-
-    private val secret = "dGVzdC1zZWNyZXQta2V5LXRlc3Qtc2VjcmV0LWtleQ==y"
     private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
 
     private fun generateValidToken(): String {

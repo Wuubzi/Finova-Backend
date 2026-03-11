@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 @ActiveProfiles("test")
 class JwtServiceTest {
 
-    @Value("\${jwt.secret}")
+    @Value($$"${jwt.secret}")
     lateinit var secret: String
 
 

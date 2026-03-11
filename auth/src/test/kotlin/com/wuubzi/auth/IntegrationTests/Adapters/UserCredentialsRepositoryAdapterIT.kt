@@ -37,7 +37,7 @@ class UserCredentialsRepositoryAdapterIT {
             withUsername("test")
             withPassword("test")
             waitingFor(Wait.forListeningPort())
-            withStartupTimeout(Duration.ofSeconds(60))
+            withStartupTimeout(Duration.ofMinutes(2))
         }
 
         @JvmStatic

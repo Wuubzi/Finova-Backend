@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PROJECT_NAME = 'Finova-Backend'
+        TESTCONTAINERS_RYUK_DISABLED = 'true'
     }
 
     stages {

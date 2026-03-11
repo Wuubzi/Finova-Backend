@@ -60,7 +60,7 @@ class Jwt{
                 .build()
                 .parseSignedClaims(token)
             return true
-        } catch (exception: SecurityException) {
+        } catch (exception: Exception) {
             return false
         }
     }

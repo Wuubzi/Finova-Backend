@@ -7,18 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.context.annotation.Import
 import org.assertj.core.api.Assertions.assertThat
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.sql.Timestamp
 import java.util.UUID
 
-@DataJpaTest
+@DataJpaTest()
 @Testcontainers
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -30,14 +30,22 @@ class UserCredentialsRepositoryAdapterIT {
 
     companion object {
         @Container
-        @ServiceConnection
-        val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:15-alpine")
-            .withDatabaseName("auth_db")
-            .withUsername("test")
-            .withPassword("test")
+        val postgres = PostgreSQLContainer("postgres:15-alpine").apply {
+            withDatabaseName("auth_db")
+            withUsername("test")
+            withPassword("test")
+        }
 
+        @JvmStatic
+        @DynamicPropertySource
+        fun configureProperties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.datasource.url", postgres::getJdbcUrl)
+            registry.add("spring.datasource.username", postgres::getUsername)
+            registry.add("spring.datasource.password", postgres::getPassword)
+            registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
+            registry.add("spring.jpa.hibernate.ddl-auto") { "create-drop" }
+        }
     }
-
 
     @Test
     fun shouldPersistCredentialsInARealPostgresContainer() {
@@ -54,5 +62,6 @@ class UserCredentialsRepositoryAdapterIT {
         val result = adapter.save(domainUser)
 
         assertThat(result.email).isEqualTo("test@wuubzi.com")
+        assertThat(result.id).isNotNull()
     }
 }

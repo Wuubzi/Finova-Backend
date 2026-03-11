@@ -37,6 +37,7 @@ class UserCredentialsRepositoryAdapterIT {
             withUsername("test")
             withPassword("test")
             withNetworkMode("host")
+            withExposedPorts(5432)
             waitingFor(Wait.forListeningPort())
             withStartupTimeout(Duration.ofMinutes(2))
         }

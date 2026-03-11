@@ -90,32 +90,4 @@ tasks.withType<Test> {
 }
 
 
-tasks.jacocoTestReport {
-	dependsOn(tasks.withType<Test>())
-	reports {
-		xml.required.set(true)
-		html.required.set(true)
-	}
-
-	// Excluir archivos de test del reporte de cobertura
-	classDirectories.setFrom(
-		files(classDirectories.files.map {
-			fileTree(it) {
-				exclude(
-					"**/*Test.class",
-					"**/*Tests.class",
-					"**/*Test$*.class",
-					"**/*TestKt.class",
-					"**/config/**",
-					"**/DTOS/**",
-					"**/Exceptions/**",
-					"**/Models/**",
-					"**/Entities/**",
-					"**/*Application.class",
-					"**/*ApplicationKt.class"
-				)
-			}
-		})
-	)
-}
 

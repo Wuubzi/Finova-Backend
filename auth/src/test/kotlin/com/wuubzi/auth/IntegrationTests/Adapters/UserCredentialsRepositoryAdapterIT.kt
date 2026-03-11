@@ -7,21 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.context.annotation.Import
 import org.assertj.core.api.Assertions.assertThat
-import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.sql.Timestamp
 import java.util.UUID
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@DataJpaTest
 @Testcontainers
 @ActiveProfiles("test")
-@Import(UserCredentialsRepositoryAdapter::class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(UserCredentialsRepositoryAdapter::class)
 class UserCredentialsRepositoryAdapterIT {
 
     @Autowired
@@ -29,20 +30,11 @@ class UserCredentialsRepositoryAdapterIT {
 
     companion object {
         @Container
+        @ServiceConnection
         val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:15-alpine")
             .withDatabaseName("auth_db")
             .withUsername("test")
             .withPassword("test")
-
-        @JvmStatic
-        @DynamicPropertySource
-        fun configureProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url", postgres::getJdbcUrl)
-            registry.add("spring.datasource.username", postgres::getUsername)
-            registry.add("spring.datasource.password", postgres::getPassword)
-            registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
-            registry.add("spring.jpa.hibernate.ddl-auto") { "create-drop" }
-        }
 
     }
 

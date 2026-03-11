@@ -12,10 +12,12 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.sql.Timestamp
+import java.time.Duration
 import java.util.UUID
 
 @DataJpaTest()
@@ -34,6 +36,8 @@ class UserCredentialsRepositoryAdapterIT {
             withDatabaseName("auth_db")
             withUsername("test")
             withPassword("test")
+            waitingFor(Wait.forListeningPort())
+            withStartupTimeout(Duration.ofSeconds(60))
         }
 
         @JvmStatic
@@ -44,6 +48,7 @@ class UserCredentialsRepositoryAdapterIT {
             registry.add("spring.datasource.password", postgres::getPassword)
             registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
             registry.add("spring.jpa.hibernate.ddl-auto") { "create-drop" }
+
         }
     }
 

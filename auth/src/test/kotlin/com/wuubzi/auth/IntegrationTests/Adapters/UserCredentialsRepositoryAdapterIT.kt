@@ -36,6 +36,7 @@ class UserCredentialsRepositoryAdapterIT {
             withDatabaseName("auth_db")
             withUsername("test")
             withPassword("test")
+            withNetworkMode("host")
             waitingFor(Wait.forListeningPort())
             withStartupTimeout(Duration.ofMinutes(2))
         }

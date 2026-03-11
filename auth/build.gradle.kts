@@ -107,10 +107,10 @@ tasks.jacocoTestReport {
 					"**/*Test$*.class",
 					"**/*TestKt.class",
 					"**/config/**",
-					"**/dtos/**",
-					"**/exceptions/**",
-					"**/models/**",
-					"**/entities/**",
+					"**/DTOS/**",
+					"**/Exceptions/**",
+					"**/Models/**",
+					"**/Entities/**",
 					"**/*Application.class",
 					"**/*ApplicationKt.class"
 				)

@@ -8,7 +8,6 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
-import org.springframework.boot.persistence.autoconfigure.EntityScan
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
@@ -32,6 +31,7 @@ class UserCredentialsRepositoryAdapterIT {
 
     companion object {
         @Container
+        @JvmStatic
         val postgres = PostgreSQLContainer("postgres:15-alpine").apply {
             withDatabaseName("auth_db")
             withUsername("test")

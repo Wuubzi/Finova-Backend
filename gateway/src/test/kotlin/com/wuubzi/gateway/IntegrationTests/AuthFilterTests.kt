@@ -8,6 +8,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
@@ -29,6 +30,8 @@ class AuthFilterTests(
 
 
     companion object {
+        @Value("\${jwt.secret}")
+        lateinit var secret: String
         const val URL_USER = "/api/v1/user/"
         val wireMockServer = WireMockServer(7001)
 

@@ -50,7 +50,7 @@ sonarqube {
 	properties {
 		property(
 			"sonar.coverage.exclusions",
-			"**/dto/**, **/dtos/**, **/config/**, **/exceptions/**, **/entities/**",
+			"**/dto/**, **/dtos/**, **/config/**, **/exceptions/**, **/entities/**, **/models/**"
 		)
 	}
 }

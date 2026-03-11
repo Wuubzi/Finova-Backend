@@ -11,12 +11,10 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
-import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.sql.Timestamp
-import java.time.Duration
 import java.util.UUID
 
 @DataJpaTest()
@@ -36,7 +34,6 @@ class UserCredentialsRepositoryAdapterIT {
             withDatabaseName("auth_db")
             withUsername("test")
             withPassword("test")
-            withNetworkMode("host")
         }
 
         @JvmStatic

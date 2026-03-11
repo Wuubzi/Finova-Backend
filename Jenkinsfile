@@ -5,7 +5,7 @@ pipeline {
         PROJECT_NAME = 'Finova-Backend'
         TESTCONTAINERS_RYUK_DISABLED = 'true'
         TESTCONTAINERS_CHECKS_DISABLE = 'true'
-        DOCKER_HOST = 'unix:///var/run/docker.sock'  
+        DOCKER_HOST = 'unix:///var/run/docker.sock'
     }
 
     stages {

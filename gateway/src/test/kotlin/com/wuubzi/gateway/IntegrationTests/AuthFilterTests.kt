@@ -123,6 +123,15 @@ class AuthFilterTests(
     }
 
     @Test
+    fun shouldReturn401WhenTokenDontStartWithBearer() {
+        webTestClient.get()
+            .uri(URL_USER)
+            .header("Authorization", "invalid-token")
+            .exchange()
+            .expectStatus().isUnauthorized()
+    }
+
+    @Test
     fun shouldReturn200WhenTokenIsValid() {
         val token = generateValidToken()
         webTestClient.get()

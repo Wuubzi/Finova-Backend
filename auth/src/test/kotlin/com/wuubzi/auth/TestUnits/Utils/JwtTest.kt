@@ -6,53 +6,68 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import java.util.UUID
+import java.util.Base64
 
 class JwtTest {
-    private lateinit var jwt: Jwt
 
-    private val secret = "dGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQ="
+    private lateinit var jwtUtils: Jwt
+    // Un secreto en Base64 de al menos 256 bits para HMAC
+    private val secretBase64 = Base64.getEncoder().encodeToString("esto-es-un-secreto-muy-largo-y-seguro-123456".toByteArray())
 
     @BeforeEach
     fun setup() {
-        jwt = Jwt()
-        jwt.secret = secret
-        jwt.init()
+        jwtUtils = Jwt()
+        jwtUtils.secret = secretBase64
+        jwtUtils.init() // Invocamos manualmente el @PostConstruct
     }
 
     @Test
-    fun shouldGenerateValidToken() {
+    fun shouldGenerateAndValidateToken() {
+        // GIVEN
         val userId = UUID.randomUUID()
 
-        val token = jwt.generateToken(userId)
+        // WHEN
+        val token = jwtUtils.generateToken(userId)
+        val isValid = jwtUtils.validateToken(token)
+        val extractedUsername = jwtUtils.getUsername(token)
 
+        // THEN
         assertNotNull(token)
-        assertTrue(jwt.validateToken(token))
+        assertTrue(isValid)
+        assertEquals(userId.toString(), extractedUsername)
     }
 
     @Test
-    fun shouldExtractUsernameFromToken() {
-        val userId = UUID.randomUUID()
+    fun shouldGenerateValidRefreshToken() {
+        // WHEN
+        val refreshToken = jwtUtils.generateRefreshToken()
 
-        val token = jwt.generateToken(userId)
-
-        val subject = jwt.getUsername(token)
-
-        assertEquals(userId.toString(), subject)
-    }
-
-    @Test
-    fun shouldReturnFalseForInvalidToken() {
-        val result = jwt.validateToken("invalid-token")
-
-        assertFalse(result)
-    }
-
-    @Test
-    fun shouldGenerateRefreshToken() {
-        val refreshToken = jwt.generateRefreshToken()
-
+        // THEN
         assertNotNull(refreshToken)
         assertTrue(refreshToken.length > 20)
     }
 
+    @Test
+    fun shouldReturnFalseWhenTokenIsInvalid() {
+        // GIVEN
+        val invalidToken = "eyAiYWxnIjogIkhTMjU2IiB9.invalid.payload"
+
+        // WHEN
+        val isValid = jwtUtils.validateToken(invalidToken)
+
+        // THEN
+        assertFalse(isValid)
+    }
+
+    @Test
+    fun shouldReturnFalseWhenTokenIsExpired() {
+        // GIVEN: Un token manipulado o simplemente una firma que no coincide
+        val token = "token.totalmente.inventado"
+
+        // WHEN
+        val isValid = jwtUtils.validateToken(token)
+
+        // THEN
+        assertFalse(isValid)
+    }
 }

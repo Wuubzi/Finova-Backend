@@ -83,6 +83,7 @@ class GlobalExceptionHandler(
             exception = ex.javaClass.simpleName,
             path = dateFormatter.getDate()
         )
+
     )
 
     @ExceptionHandler(TokenRevokedException::class)
@@ -104,4 +105,16 @@ class GlobalExceptionHandler(
             path = dateFormatter.getDate()
         )
     )
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = "An unexpected error occurred",
+            code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(error)
+    }
+
 }

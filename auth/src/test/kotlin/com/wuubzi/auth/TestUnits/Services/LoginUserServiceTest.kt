@@ -22,6 +22,8 @@ import org.mockito.kotlin.whenever
 import java.sql.Timestamp
 import java.util.UUID
 
+const val REFRESH_TOKEN_TEST = "refresh-token-123"
+const val ACCESS_TOKEN_TEST = "access-token-123"
 @ExtendWith(MockitoExtension::class)
 class LoginUserServiceTest {
 
@@ -60,15 +62,15 @@ class LoginUserServiceTest {
 
         whenever(userCredentialsRepository.findByEmail(email)).thenReturn(user)
         whenever(passwordEncoder.matches(password, user.password)).thenReturn(true)
-        whenever(jwtPort.generateRefreshToken()).thenReturn("refresh-token-123")
-        whenever(jwtPort.generateToken(userId)).thenReturn("access-token-123")
+        whenever(jwtPort.generateRefreshToken()).thenReturn(REFRESH_TOKEN_TEST)
+        whenever(jwtPort.generateToken(userId)).thenReturn(ACCESS_TOKEN_TEST)
 
         // WHEN
         val response = loginUserService.login(loginRequest)
 
         // THEN
-        assertEquals("access-token-123", response.accessToken)
-        assertEquals("refresh-token-123", response.refreshToken)
+        assertEquals(ACCESS_TOKEN_TEST, response.accessToken)
+        assertEquals(REFRESH_TOKEN_TEST, response.refreshToken)
 
         // Verificar que se guardó el refresh token en la base de datos
         val refreshTokenCaptor = argumentCaptor<RefreshToken>()
@@ -76,7 +78,7 @@ class LoginUserServiceTest {
 
         val savedToken = refreshTokenCaptor.firstValue
         assertEquals(userId, savedToken.userId)
-        assertEquals("refresh-token-123", savedToken.token)
+        assertEquals(REFRESH_TOKEN_TEST, savedToken.token)
         assertEquals(false, savedToken.isRevoked)
     }
 

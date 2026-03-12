@@ -8,6 +8,7 @@ class EurekaApplicationTests {
 
 	@Test
 	fun contextLoads() {
+		//this function is empty
 	}
 
 }

@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.ValueOperations
 import java.time.Duration
 
 @ExtendWith(MockitoExtension::class)
+const val KEY = "test-key"
 class RedisAdapterTest {
 
     @Mock
@@ -34,41 +35,38 @@ class RedisAdapterTest {
     @Test
     fun shouldSaveToRedis() {
         // GIVEN
-        val key = "test-key"
         val value = "test-value"
         val duration = Duration.ofMinutes(10)
 
         // WHEN
-        redisAdapter.save(key, value, duration)
+        redisAdapter.save(KEY, value, duration)
 
         // THEN
-        verify(valueOperations).set(key, value, duration)
+        verify(valueOperations).set(KEY, value, duration)
     }
 
     @Test
     fun shouldGetFromRedis() {
         // GIVEN
-        val key = "test-key"
         val expectedValue = "test-value"
-        whenever(valueOperations.get(key)).thenReturn(expectedValue)
+        whenever(valueOperations.get(KEY)).thenReturn(expectedValue)
 
         // WHEN
-        val result = redisAdapter.get(key)
+        val result = redisAdapter.get(KEY)
 
         // THEN
         assert(result == expectedValue)
-        verify(valueOperations).get(key)
+        verify(valueOperations).get(KEY)
     }
 
     @Test
     fun shouldDeleteFromRedis() {
         // GIVEN
-        val key = "test-key"
 
         // WHEN
-        redisAdapter.delete(key)
+        redisAdapter.delete(KEY)
 
         // THEN
-        verify(redisTemplate).delete(key)
+        verify(redisTemplate).delete(KEY)
     }
 }

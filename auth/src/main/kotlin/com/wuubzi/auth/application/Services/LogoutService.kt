@@ -12,10 +12,9 @@ class LogoutService(
         val refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
             ?: throw IllegalArgumentException("Refresh token not found")
 
-        require (refreshTokenEntity.isRevoked) {
-            throw IllegalArgumentException("Refresh token already revoked")
+        require(!refreshTokenEntity.isRevoked) {
+            "Refresh token already revoked"
         }
-
         val revokedToken = refreshTokenEntity.copy(
             isRevoked = true
         )

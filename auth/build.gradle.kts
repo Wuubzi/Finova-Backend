@@ -89,10 +89,34 @@ tasks.withType<Test> {
 
 
 
+
 tasks.withType<Test> {
 	useJUnitPlatform()
 	finalizedBy(tasks.jacocoTestReport)
 }
+tasks.jacocoTestReport {
+	dependsOn(tasks.withType<Test>())
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
 
+
+	classDirectories.setFrom(
+		files(classDirectories.files.map {
+			fileTree(it) {
+				exclude(
+					"**/*Test.class",
+					"**/*Tests.class",
+					"**/*Test$*.class",
+					"**/*TestKt.class",
+					"**/config/**",
+					"**/*Application.class",
+					"**/*ApplicationKt.class"
+				)
+			}
+		})
+	)
+}
 
 

@@ -1,36 +1,34 @@
 package com.wuubzi.gateway.IntegrationTests
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.aResponse
-import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import java.nio.charset.StandardCharsets
-import java.util.Date
+import java.util.*
 
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
-@TestPropertySource(properties = [
-    "eureka.client.enabled=false",
-    "spring.cloud.config.enabled=false",
-    "spring.main.allow-bean-definition-overriding=true"
-])
 class AuthFilterTests(
     @Autowired private val webTestClient: WebTestClient
 ) {
+
+    @Value($$"${jwt.secret}")
+    lateinit var secret: String
 
     companion object {
         const val URL_USER = "/api/v1/user/"
@@ -71,7 +69,7 @@ class AuthFilterTests(
 
     @TestConfiguration
     class TestRoutesConfig {
-        @Bean("routes")
+        @Bean
         fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
             return builder.routes()
                 // Ruta pública — sin AuthFilter
@@ -87,10 +85,8 @@ class AuthFilterTests(
         }
     }
 
-    private val secret = "my-super-secret-key-my-super-secret-key"
-    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
-
     private fun generateValidToken(): String {
+        val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
         return Jwts.builder()
             .subject("carlos")
             .expiration(Date(System.currentTimeMillis() + 60000))
@@ -122,6 +118,15 @@ class AuthFilterTests(
         webTestClient.get()
             .uri(URL_USER)
             .header("Authorization", "Bearer invalid-token")
+            .exchange()
+            .expectStatus().isUnauthorized()
+    }
+
+    @Test
+    fun shouldReturn401WhenTokenDontStartWithBearer() {
+        webTestClient.get()
+            .uri(URL_USER)
+            .header("Authorization", "invalid-token")
             .exchange()
             .expectStatus().isUnauthorized()
     }

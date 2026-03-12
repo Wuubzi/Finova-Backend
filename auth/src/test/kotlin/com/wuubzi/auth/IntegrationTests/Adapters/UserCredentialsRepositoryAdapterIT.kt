@@ -13,12 +13,12 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.postgresql.PostgreSQLContainer
+import org.testcontainers.containers.PostgreSQLContainer  // ← Importación correcta
 import java.sql.Timestamp
 import java.util.UUID
 
-@DataJpaTest()
-@Testcontainers
+@DataJpaTest
+@Testcontainers(disabledWithoutDocker = true)
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(UserCredentialsRepositoryAdapter::class)
@@ -28,23 +28,43 @@ class UserCredentialsRepositoryAdapterIT {
     lateinit var adapter: UserCredentialsRepositoryAdapter
 
     companion object {
+        // Detectar si estamos en Jenkins
+        private val isJenkins: Boolean =
+            System.getenv("JENKINS_HOME") != null ||
+                    System.getenv("JENKINS_URL") != null
+
         @Container
         @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:15-alpine").apply {
-            withDatabaseName("auth_db")
-            withUsername("test")
-            withPassword("test")
-        }
+        val postgres: PostgreSQLContainer<Nothing>? =  // ← Tipo correcto: PostgreSQLContainer<Nothing>
+            if (!isJenkins) {
+                PostgreSQLContainer<Nothing>("postgres:15-alpine").apply {
+                    withDatabaseName("auth_db")
+                    withUsername("test")
+                    withPassword("test")
+                }
+            } else {
+                null
+            }
 
         @JvmStatic
         @DynamicPropertySource
         fun configureProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.datasource.url", postgres::getJdbcUrl)
-            registry.add("spring.datasource.username", postgres::getUsername)
-            registry.add("spring.datasource.password", postgres::getPassword)
+            // Usar estructura if-else simple en lugar de when
+            if (isJenkins) {
+                // Jenkins: usar postgres-test del docker-compose
+                registry.add("spring.datasource.url") { "jdbc:postgresql://postgres-test:5432/auth_db" }
+                registry.add("spring.datasource.username") { "test" }
+                registry.add("spring.datasource.password") { "test" }
+            } else {
+                // Local: usar Testcontainers
+                postgres?.apply {  // ← Usar apply en lugar de let
+                    registry.add("spring.datasource.url") { jdbcUrl }
+                    registry.add("spring.datasource.username") { username }
+                    registry.add("spring.datasource.password") { password }
+                }
+            }
             registry.add("spring.datasource.driver-class-name") { "org.postgresql.Driver" }
             registry.add("spring.jpa.hibernate.ddl-auto") { "create-drop" }
-
         }
     }
 

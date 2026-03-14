@@ -1,6 +1,5 @@
 package com.wuubzi.auth.Utils
 
-import com.wuubzi.auth.Utils.OtpGenerator
 import org.junit.jupiter.api.Test
 
 class OtpGeneratorTest {

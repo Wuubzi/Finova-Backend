@@ -1,6 +1,5 @@
 package com.wuubzi.auth.Utils
 
-import com.wuubzi.auth.Utils.Jwt
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

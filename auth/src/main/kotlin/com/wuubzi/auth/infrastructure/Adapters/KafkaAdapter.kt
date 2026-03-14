@@ -1,5 +1,6 @@
 package com.wuubzi.auth.infrastructure.Adapters
 
+import com.wuubzi.auth.application.DTOS.Events.RecoverPassword
 import com.wuubzi.auth.application.DTOS.Events.UserCreated
 import com.wuubzi.auth.application.Ports.out.KafkaPort
 import org.springframework.kafka.core.KafkaTemplate
@@ -13,8 +14,8 @@ class KafkaAdapter(
       kafkaTemplate.send("user-created", user)
     }
 
-    override fun publishRecoverPassword(otp: String) {
-        kafkaTemplate.send("recover-password", otp)
+    override fun publishRecoverPassword(recoverPassword: RecoverPassword) {
+        kafkaTemplate.send("recover-password", recoverPassword)
     }
 
 }

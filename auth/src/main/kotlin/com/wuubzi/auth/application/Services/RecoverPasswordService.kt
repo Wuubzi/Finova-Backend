@@ -1,5 +1,6 @@
 package com.wuubzi.auth.application.Services
 
+import com.wuubzi.auth.application.DTOS.Events.RecoverPassword
 import com.wuubzi.auth.application.Ports.`in`.RecoverPasswordUseCase
 import com.wuubzi.auth.application.Ports.out.CachePort
 import com.wuubzi.auth.application.Ports.out.KafkaPort
@@ -22,6 +23,11 @@ class RecoverPasswordService(
         val otp = otpPort.generateOtp()
         cachePort.save("recover-password-otp:$email", otp, Duration.ofMinutes(10))
 
-        kafkaPort.publishRecoverPassword(otp)
+        val recoverPasswordEvent = RecoverPassword(
+            email = email,
+            otp = otp
+        )
+
+        kafkaPort.publishRecoverPassword(recoverPasswordEvent)
     }
 }

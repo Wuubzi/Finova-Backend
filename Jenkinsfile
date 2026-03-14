@@ -27,7 +27,6 @@ pipeline {
         stage('Unit Tests') {
             steps {
                 echo "🧪 Corriendo tests unitarios..."
-                // Dar permisos al usuario Jenkins para acceder a Docker
                 sh '''
                     # Verificar que Docker esté disponible
                     docker --version || exit 1

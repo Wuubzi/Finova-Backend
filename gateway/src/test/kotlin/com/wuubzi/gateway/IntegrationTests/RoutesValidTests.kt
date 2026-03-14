@@ -27,7 +27,7 @@ class RoutesValidTests(
 
     @TestConfiguration
     class TestRoutesConfig {
-        @Bean("routes")  // mismo nombre para sobreescribir
+        @Bean("routes")
         fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
             return builder.routes()
                 .route("auth") { r -> r.path("/api/v1/auth/**").uri("http://localhost:7000") }

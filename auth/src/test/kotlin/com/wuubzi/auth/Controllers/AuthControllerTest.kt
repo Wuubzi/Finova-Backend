@@ -14,13 +14,17 @@ package com.wuubzi.auth.Controllers
     import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
     import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
     import org.springframework.http.MediaType
+    import org.springframework.mock.web.MockMultipartFile
     import org.springframework.test.context.bean.override.mockito.MockitoBean
     import org.springframework.test.web.servlet.MockMvc
+    import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
     import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
     import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+    import org.springframework.web.multipart.MultipartFile
 
     const val EMAIL_TEST = "test@test.com"
     const val DATE_TEST = "DATE_TEST"
+    const val PASSWORD_TEST = "Ejemplo123?"
     @WebMvcTest(AuthController::class)
     @AutoConfigureMockMvc(addFilters = false)
     class AuthControllerTest {
@@ -70,23 +74,40 @@ package com.wuubzi.auth.Controllers
                 firstName = "Test",
                 lastName = "User",
                 documentNumber = "123456789",
-                phoneNumber = "123456789",
+                phoneNumber = "1234567891",
                 address = "Test Address",
                 email = EMAIL_TEST,
-                password = "123456"
+                password = PASSWORD_TEST
+            )
+
+
+            val userPart = MockMultipartFile(
+                "user",
+                "",
+                "application/json",
+                objectMapper.writeValueAsString(request).toByteArray()
+            )
+
+
+            val profilePart = MockMultipartFile(
+                "profile",
+                "profile.jpg",
+                "image/jpeg",
+                "fake-image-content".toByteArray()
             )
 
             `when`(dateFormatter.getDate()).thenReturn(DATE_TEST)
 
             mockMvc.perform(
-                post("/api/v1/auth/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
+                multipart("/api/v1/auth/register")
+                    .file(userPart)
+                    .file(profilePart)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
             )
                 .andExpect(status().isCreated)
                 .andExpect(jsonPath("$.message").value("Usuario registrado exitosamente"))
 
-            verify(register).createUser(request)
+            verify(register).createUser(request, profilePart)
         }
 
         @Test
@@ -94,7 +115,7 @@ package com.wuubzi.auth.Controllers
 
             val request = LoginRequest(
                 email = EMAIL_TEST,
-                password = "123456"
+                password = PASSWORD_TEST
             )
 
             val tokenResponse =  TokenResponse(
@@ -179,8 +200,8 @@ package com.wuubzi.auth.Controllers
             val request = ChangePasswordRequest(
                 email = "correo@ejemplo.com",
                 resetToken = "reset",
-                password = "123456",
-                confirmPassword = "123456"
+                password = PASSWORD_TEST,
+                confirmPassword = PASSWORD_TEST
             )
 
             `when`(dateFormatter.getDate()).thenReturn(DATE_TEST)

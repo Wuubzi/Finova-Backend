@@ -5,6 +5,8 @@ import com.wuubzi.auth.application.DTOS.Request.UserRequest
 import com.wuubzi.auth.application.Exceptions.EmailAlreadyExist
 import com.wuubzi.auth.application.Ports.out.KafkaPort
 import com.wuubzi.auth.application.Ports.out.PasswordEncoderPort
+import com.wuubzi.auth.application.Ports.out.BucketPort
+import com.wuubzi.auth.application.Ports.out.FileValidationPort
 import com.wuubzi.auth.application.Ports.out.UserCredentialsRepositoryPort
 import com.wuubzi.auth.application.Services.CreateUserService
 import com.wuubzi.auth.domain.models.UserCredentials
@@ -15,10 +17,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
-    import org.mockito.kotlin.any
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.mock.web.MockMultipartFile
 import java.sql.Timestamp
 import java.util.UUID
 
@@ -34,6 +37,12 @@ class CreateUserServiceTest {
     @Mock
     lateinit var kafkaPort: KafkaPort
 
+    @Mock
+    lateinit var fileValidation: FileValidationPort  // ← AGREGADO
+
+    @Mock
+    lateinit var bucketPort: BucketPort  // ← AGREGADO
+
     @InjectMocks
     lateinit var createUserService: CreateUserService
 
@@ -47,33 +56,50 @@ class CreateUserServiceTest {
         address = "Calle 123"
     )
 
+    private val file = MockMultipartFile(
+        "profilePicture",
+        "profile.jpg",
+        "image/jpeg",
+        "fake-image-content".toByteArray()
+    )
+
     @Test
     fun shouldCreateUserSuccessfully() {
         // GIVEN
+        val profileUrl = "https://bucket.example.com/profiles/user-profile.jpg"
+
         whenever(userCredentialsRepository.findByEmail(userRequest.email)).thenReturn(null)
         whenever(passwordEncoder.encode(userRequest.password)).thenReturn("encodedPassword")
+        whenever(bucketPort.saveBucket(file)).thenReturn(profileUrl)  // Mock del bucket
 
         // Mockeamos el save para que devuelva lo que recibe
         whenever(userCredentialsRepository.save(any())).thenAnswer { it.arguments[0] as UserCredentials }
 
         // WHEN
-        val result = createUserService.createUser(userRequest)
+        val result = createUserService.createUser(userRequest, file)
 
         // THEN
-        // 1. Verificar que se codificó la contraseña
+        // 1. Verificar que se validó el archivo
+        verify(fileValidation).validate(file)
+
+        // 2. Verificar que se guardó en el bucket
+        verify(bucketPort).saveBucket(file)
+
+        // 3. Verificar que se codificó la contraseña
         assertEquals("encodedPassword", result.password)
         assertEquals(userRequest.email, result.email)
 
-        // 2. Verificar que se publicó el evento en Kafka con los datos correctos
+        // 4. Verificar que se publicó el evento en Kafka con los datos correctos
         val eventCaptor = argumentCaptor<UserCreated>()
         verify(kafkaPort).publishUserCreated(eventCaptor.capture())
 
         val capturedEvent = eventCaptor.firstValue
         assertEquals(userRequest.firstName, capturedEvent.firstName)
         assertEquals(userRequest.documentNumber, capturedEvent.documentNumber)
-        assertEquals(result.userId, capturedEvent.idUser) // Deben coincidir los UUIDs generados
+        assertEquals(result.userId, capturedEvent.idUser)
+        assertEquals(profileUrl, capturedEvent.profileUrl)  // Verificar que se pasó la URL
 
-        // 3. Verificar que se persistió en el repositorio
+        // 5. Verificar que se persistió en el repositorio
         verify(userCredentialsRepository).save(any())
     }
 
@@ -94,12 +120,14 @@ class CreateUserServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows(EmailAlreadyExist::class.java) {
-            createUserService.createUser(userRequest)
+            createUserService.createUser(userRequest, file)
         }
 
         assertEquals("User with email ${userRequest.email} already exists", exception.message)
 
-        // Verificar que no se llamó a Kafka ni se guardó nada nuevo
+        // Verificar que no se validó archivo, no se guardó en bucket, no se llamó a Kafka ni se guardó nada nuevo
+        verify(fileValidation, org.mockito.Mockito.never()).validate(any())
+        verify(bucketPort, org.mockito.Mockito.never()).saveBucket(any())
         verify(kafkaPort, org.mockito.Mockito.never()).publishUserCreated(any())
         verify(userCredentialsRepository, org.mockito.Mockito.never()).save(any())
     }

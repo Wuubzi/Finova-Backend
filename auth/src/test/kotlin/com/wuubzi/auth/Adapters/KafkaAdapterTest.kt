@@ -31,6 +31,7 @@ class KafkaAdapterTest {
             documentNumber =    "123456789",
             phoneNumber = "123456789",
             address = "Test Address",
+            profileUrl = "https://example.com/profile.jpg"
         )
 
         // WHEN

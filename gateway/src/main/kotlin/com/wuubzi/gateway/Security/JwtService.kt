@@ -2,20 +2,23 @@ package com.wuubzi.gateway.Security
 
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.util.Date
+import javax.crypto.SecretKey
 
 @Service
 class JwtService(
     @Value($$"${jwt.secret}")
     private val secret: String
-
-
 ){
-    private val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
+    val keyBytes: ByteArray? = Decoders.BASE64.decode(secret)
+    val key: SecretKey? = Keys.hmacShaKeyFor(keyBytes)
+
+
 
     fun validateToken(token: String): String {
         val jws = Jwts.parser()
@@ -26,6 +29,7 @@ class JwtService(
         val claims = jws.payload
 
         if (claims.expiration.before(Date())) {
+
             throw JwtException("Token expired")
         }
 

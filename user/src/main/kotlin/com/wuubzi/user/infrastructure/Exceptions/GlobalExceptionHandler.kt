@@ -1,0 +1,66 @@
+package com.wuubzi.user.infrastructure.Exceptions
+
+import com.wuubzi.user.application.DTOS.Response.ErrorResponse
+import com.wuubzi.user.utils.DateFormatter
+import org.apache.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
+
+@RestControllerAdvice
+class GlobalExceptionHandler(
+    private val dateFormatter: DateFormatter
+) {
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(ex: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = "Invalid request body",
+            code = 400,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(400).body(error)
+    }
+
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message,
+            code = HttpStatus.SC_BAD_REQUEST,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error)
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundException(ex: NoResourceFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message,
+            code = HttpStatus.SC_NOT_FOUND,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(error)
+    }
+
+
+
+
+
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = "An unexpected error occurred",
+            code = HttpStatus.SC_INTERNAL_SERVER_ERROR,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(error)
+    }
+
+}

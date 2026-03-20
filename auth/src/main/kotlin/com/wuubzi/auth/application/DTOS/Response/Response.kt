@@ -1,8 +1,8 @@
 package com.wuubzi.auth.application.DTOS.Response
 
 data class Response(
-    var message: String? = null,
-    var url: String? = null,
-    var code: Int? = null,
-    var timestamp: String? = null
+    val message: String,
+    val url: String,
+    val code: Int,
+    val timestamp: String
 )

@@ -26,20 +26,37 @@ class LoginUserService(
        val user = userCredentialsRepository.findByEmail(userLogin.email)
             ?: throw IllegalArgumentException("User with email ${userLogin.email} not found")
 
+        if (!user.isActive) {
+            throw IllegalArgumentException("User with email ${userLogin.email} is inactive")
+        }
+
         if (passwordEncoder.matches(userLogin.password, user.password)) {
             val refreshToken = jwtPort.generateRefreshToken()
             val expiresAt = Instant.now().plusMillis(EXPIRATION_TIME.toLong())
-            val refreshTokenSave  = RefreshToken(
-                id = UUID.randomUUID(),
-                userId = user.id,
-                token = refreshToken,
-                expiresAt = expiresAt,
-                isRevoked = false,
-                createdAt = Instant.now(),
-            )
+
+            val existsRefreshToken = refreshTokenRepositoryPort.findByUserId(user.userId)
+            if (existsRefreshToken != null) {
+                val updateToken = existsRefreshToken.copy(
+                    token = refreshToken,
+                    expiresAt = expiresAt,
+                    isRevoked = false,
+                    createdAt = Instant.now()
+                )
+                refreshTokenRepositoryPort.save(updateToken)
+            } else {
+                val refreshTokenSave  = RefreshToken(
+                    id = UUID.randomUUID(),
+                    userId = user.userId,
+                    token = refreshToken,
+                    expiresAt = expiresAt,
+                    isRevoked = false,
+                    createdAt = Instant.now(),
+                )
                 refreshTokenRepositoryPort.save(refreshTokenSave)
+            }
             return TokenResponse(
-                accessToken = jwtPort.generateToken(user.id),
+
+                accessToken = jwtPort.generateToken(user.userId),
                 refreshToken = refreshToken
             )
         } else {

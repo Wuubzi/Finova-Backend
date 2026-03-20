@@ -6,18 +6,23 @@ import com.wuubzi.auth.application.Exceptions.EmailAlreadyExist
 import com.wuubzi.auth.application.Ports.`in`.CreateUserUseCase
 import com.wuubzi.auth.application.Ports.out.KafkaPort
 import com.wuubzi.auth.application.Ports.out.PasswordEncoderPort
+import com.wuubzi.auth.application.Ports.out.BucketPort
+import com.wuubzi.auth.application.Ports.out.FileValidationPort
 import com.wuubzi.auth.application.Ports.out.UserCredentialsRepositoryPort
 import com.wuubzi.auth.domain.models.UserCredentials
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 @Service
 class CreateUserService(
     private val userCredentialsRepository: UserCredentialsRepositoryPort,
     private val passwordEncoder: PasswordEncoderPort,
+    private val fileValidation: FileValidationPort,
     private val kafkaPort: KafkaPort,
+    private val bucketPort: BucketPort,
 ): CreateUserUseCase {
-    override fun createUser(userRequest: UserRequest): UserCredentials {
+    override fun createUser(userRequest: UserRequest, profile: MultipartFile): UserCredentials {
         val user = userCredentialsRepository.findByEmail(userRequest.email)
         if (user != null) {
             throw EmailAlreadyExist("User with email ${user.email} already exists")
@@ -35,6 +40,10 @@ class CreateUserService(
             createdAt = java.sql.Timestamp(System.currentTimeMillis())
         )
 
+        fileValidation.validate(profile)
+
+        val profileUrl = bucketPort.saveBucket(profile)
+
         val createdUser = UserCreated(
             idUser = userId,
             firstName = userRequest.firstName,
@@ -42,6 +51,7 @@ class CreateUserService(
             documentNumber = userRequest.documentNumber,
             phoneNumber = userRequest.phoneNumber,
             address = userRequest.address,
+            profileUrl = profileUrl,
         )
 
         kafkaPort.publishUserCreated(createdUser)

@@ -8,5 +8,6 @@ data class UserCreated(
     val lastName: String,
     val documentNumber: String,
     val phoneNumber: String,
+    val profileUrl: String,
     val address: String,
 )

@@ -7,9 +7,11 @@ import com.wuubzi.auth.application.Exceptions.InvalidOtpException
 import com.wuubzi.auth.application.Exceptions.TokenExpiredException
 import com.wuubzi.auth.application.Exceptions.TokenNotFoundException
 import com.wuubzi.auth.application.Exceptions.TokenRevokedException
+import jakarta.validation.ValidationException
 import org.apache.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.servlet.resource.NoResourceFoundException
@@ -106,6 +108,63 @@ class GlobalExceptionHandler(
         )
     )
 
+    @ExceptionHandler(InvalidFileException::class)
+    fun handleInvalidFileException(ex: InvalidFileException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message ?: "Invalid file format",
+            code = HttpStatus.SC_BAD_REQUEST,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error)
+    }
+
+    @ExceptionHandler(MaliciousFileException::class)
+    fun handleMaliciousFileException(ex: MaliciousFileException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message ?: "Malicious file detected",
+            code = HttpStatus.SC_FORBIDDEN,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_FORBIDDEN).body(error)
+    }
+
+    @ExceptionHandler(VirusScanException::class)
+    fun handleVirusScanException(ex: VirusScanException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message ?: "Virus scan failed",
+            code = HttpStatus.SC_SERVICE_UNAVAILABLE,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_SERVICE_UNAVAILABLE).body(error)
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        val errors = ex.bindingResult.fieldErrors.joinToString(", ") { "${it.field}: ${it.defaultMessage}" }
+
+        val error = ErrorResponse(
+            message = errors,
+            code = HttpStatus.SC_BAD_REQUEST,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error)
+    }
+
+    @ExceptionHandler(ValidationException::class)
+    fun handleValidationException(ex: ValidationException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message ?: "Validation failed",
+            code = HttpStatus.SC_BAD_REQUEST,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error)
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
         val error = ErrorResponse(
@@ -116,5 +175,4 @@ class GlobalExceptionHandler(
         )
         return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body(error)
     }
-
 }

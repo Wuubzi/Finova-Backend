@@ -25,7 +25,6 @@ class Security(
 
     @Bean
     fun jwtDecoder(): JwtDecoder {
-        // Decodificar de Base64 igual que en tu servicio de auth
         val keyBytes: ByteArray? = Decoders.BASE64.decode(secret)
         val key: SecretKey = Keys.hmacShaKeyFor(keyBytes)
 
@@ -45,7 +44,6 @@ class Security(
                 it.jwt {  }
                 it.authenticationEntryPoint(authenticationEntryPoint)
             }
-
         return http.build()
     }
 

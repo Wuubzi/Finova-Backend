@@ -2,7 +2,6 @@ package com.wuubzi.user.infrastructure.Adapters
 
 import com.wuubzi.user.application.Ports.Out.UserRepositoryPort
 import com.wuubzi.user.domain.Models.User
-import com.wuubzi.user.infrastructure.Persistence.Entities.UserEntity
 import com.wuubzi.user.infrastructure.Persistence.Mappers.toDomain
 import com.wuubzi.user.infrastructure.Persistence.Mappers.toEntity
 import com.wuubzi.user.infrastructure.Repositories.UserRepository

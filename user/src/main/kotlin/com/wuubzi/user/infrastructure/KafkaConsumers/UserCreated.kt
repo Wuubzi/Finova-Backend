@@ -19,8 +19,8 @@ class UserCreated(
     )
     fun listen(data: UserRequestEvent) {
         val userExists = userRepository.findByDocumentNumber(data.documentNumber)
-        if (userExists != null) {
-            throw IllegalArgumentException("User with document number ${data.documentNumber} already exists")
+        require(userExists == null) {
+            "User with document number ${data.documentNumber} already exists"
         }
         val userCreated = UserEntity().apply {
             idUser = data.idUser

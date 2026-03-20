@@ -23,9 +23,9 @@ class FileValidation(
     }
 
     fun validateImageFile(file: MultipartFile) {
-       // if (!isValidImage(file)) {
-           // throw InvalidFileException("File is not a valid PNG or JPG image")
-       // }
+       if (!isValidImage(file)) {
+            throw InvalidFileException("File is not a valid PNG or JPG image")
+       }
 
 
         scanFileWithVirusTotal(file)

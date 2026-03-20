@@ -20,7 +20,6 @@ package com.wuubzi.auth.Controllers
     import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
     import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
     import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-    import org.springframework.web.multipart.MultipartFile
 
     const val EMAIL_TEST = "test@test.com"
     const val DATE_TEST = "DATE_TEST"

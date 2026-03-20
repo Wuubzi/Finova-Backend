@@ -26,8 +26,8 @@ class LoginUserService(
        val user = userCredentialsRepository.findByEmail(userLogin.email)
             ?: throw IllegalArgumentException("User with email ${userLogin.email} not found")
 
-        if (!user.isActive) {
-            throw IllegalArgumentException("User with email ${userLogin.email} is inactive")
+        require(user.isActive) {
+            "User with email ${userLogin.email} is inactive"
         }
 
         if (passwordEncoder.matches(userLogin.password, user.password)) {

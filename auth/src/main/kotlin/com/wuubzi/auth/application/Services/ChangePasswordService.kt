@@ -20,16 +20,18 @@ class ChangePasswordService(
         val canChangePassword = cachePort.get("reset-password-token:${changePasswordRequest.email}")
 
         require(canChangePassword == changePasswordRequest.resetToken) {
-            throw IllegalArgumentException("Invalid or expired reset token")
+          "Invalid or expired reset token"
+
         }
 
         require(changePasswordRequest.password == changePasswordRequest.confirmPassword) {
-            throw IllegalArgumentException("Passwords do not match")
+            "Passwords do not match"
         }
 
         val password = passwordEncoder.encode(changePasswordRequest.password)
 
         user.password = (password)
         userCredentialsRepository.save(user)
+        cachePort.delete("reset-password-token:${changePasswordRequest.email}")
     }
 }

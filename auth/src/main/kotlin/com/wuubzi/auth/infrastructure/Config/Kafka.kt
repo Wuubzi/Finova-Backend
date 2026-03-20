@@ -23,71 +23,65 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer
 @Configuration
 class Kafka {
 
-    @Bean
-    fun producerConfigs(): Map<String, Any> {
-        val props = HashMap<String, Any>()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java
-        props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = JacksonJsonSerializer::class.java
-        return props
+    companion object {
+        private const val BOOTSTRAP_SERVERS = "localhost:9092"
+        private const val GROUP_ID = "auth-service"
+        private const val TOPIC_PARTITIONS = 3
+        private const val TOPIC_REPLICAS = 1
     }
 
     @Bean
-    fun producerFactory(): ProducerFactory<String, Any> {
-        return DefaultKafkaProducerFactory(producerConfigs())
-    }
+    fun producerConfigs(): Map<String, Any> = mapOf(
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+        ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonJsonSerializer::class.java
+    )
 
     @Bean
-    fun kafkaTemplate(): KafkaTemplate<String, Any> {
-        return KafkaTemplate(producerFactory())
-    }
+    fun producerFactory(): ProducerFactory<String, Any> =
+        DefaultKafkaProducerFactory(producerConfigs())
 
     @Bean
-    fun userCreatedTopic(): NewTopic {
-        return TopicBuilder.name("user-created")
-            .partitions(3)
-            .replicas(1)
-            .build()
-    }
+    fun kafkaTemplate(): KafkaTemplate<String, Any> =
+        KafkaTemplate(producerFactory())
 
     @Bean
-    fun recoverPasswordTopic(): NewTopic {
-        return TopicBuilder.name("recover-password")
-            .partitions(3)
-            .replicas(1)
-            .build()
-    }
+    fun userCreatedTopic(): NewTopic =
+        createTopic("user-created")
+
+    @Bean
+    fun recoverPasswordTopic(): NewTopic =
+        createTopic("recover-password")
 
     @Bean
     fun kafkaListenerContainerFactory():
             KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, Any>> {
-
-        val factory = ConcurrentKafkaListenerContainerFactory<String, Any>()
-        factory.setConsumerFactory(consumerFactory())
-        factory.setConcurrency(3)
-        factory.containerProperties.pollTimeout = 3000
-
-        return factory
+        return ConcurrentKafkaListenerContainerFactory<String, Any>().apply {
+            setConsumerFactory(consumerFactory())
+            setConcurrency(3)
+            containerProperties.pollTimeout = 3000
+        }
     }
 
     @Bean
-    fun consumerFactory(): ConsumerFactory<String, Any> {
-        return DefaultKafkaConsumerFactory(consumerConfigs())
-    }
+    fun consumerFactory(): ConsumerFactory<String, Any> =
+        DefaultKafkaConsumerFactory(consumerConfigs())
 
     @Bean
-    fun consumerConfigs(): Map<String, Any> {
+    fun consumerConfigs(): Map<String, Any> = mapOf(
+        ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+        ConsumerConfig.GROUP_ID_CONFIG to GROUP_ID,
+        ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java,
+        ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+        JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS to false,
+        JacksonJsonDeserializer.VALUE_DEFAULT_TYPE to UserDeletedEvent::class.java,
+        JacksonJsonDeserializer.TRUSTED_PACKAGES to "*"
+    )
 
-        val props = HashMap<String, Any>()
-
-        props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = "localhost:9092"
-        props[ConsumerConfig.GROUP_ID_CONFIG] = "auth-service"
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JacksonJsonDeserializer::class.java
-        props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-        props[JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS] = false
-        props[JacksonJsonDeserializer.VALUE_DEFAULT_TYPE] = UserDeletedEvent::class.java
-        props[JacksonJsonDeserializer.TRUSTED_PACKAGES] = "*"
-        return props
-    }
+    private fun createTopic(name: String): NewTopic =
+        TopicBuilder.name(name)
+            .partitions(TOPIC_PARTITIONS)
+            .replicas(TOPIC_REPLICAS)
+            .build()
 }

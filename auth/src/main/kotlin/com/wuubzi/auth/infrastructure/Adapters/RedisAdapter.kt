@@ -14,7 +14,7 @@ class RedisAdapter(
     }
 
     override fun get(key: String): String? {
-        return redisTemplate.opsForValue().get(key) as? String
+        return redisTemplate.opsForValue().get(key)
     }
 
     override fun delete(key: String) {

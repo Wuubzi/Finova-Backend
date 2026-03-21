@@ -45,7 +45,7 @@ class FileValidationTest {
         }
     }
     @Test
-    fun `should throw VirusScanException when API returns non-200 status`() {
+    fun shouldThrowVirusScanExceptionWhenAPIReturnsnon200Status() {
         // GIVEN
         val filename = "test.jpg"
         whenever(multipartFile.isEmpty).thenReturn(false)

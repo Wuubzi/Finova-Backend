@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 class LogoutService(
     private val refreshTokenRepository: RefreshTokenRepositoryPort
 ): LogoutUseCase {
-    override fun logout(refreshToken: String) {
+    override fun logout(refreshToken: String?) {
         val refreshTokenEntity = refreshTokenRepository.findByToken(refreshToken)
             ?: throw IllegalArgumentException("Refresh token not found")
 

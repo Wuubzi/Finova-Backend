@@ -1,6 +1,8 @@
 package com.wuubzi.auth.application.DTOS.Request
 
-data class RefreshTokenRequest(
-    val refreshToken: String
+import jakarta.validation.constraints.NotBlank
 
+data class RefreshTokenRequest(
+    @field:NotBlank(message = "Refresh token is required")
+    val refreshToken: String
 )

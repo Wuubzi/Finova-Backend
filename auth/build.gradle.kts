@@ -25,6 +25,7 @@ extra["springCloudVersion"] = "2025.1.0"
 extra["jwtVersion"] = "0.13.0"
 extra["mockitoKotlinVersion"] = "6.2.3"
 extra["postgresqlVersion"] = "2.0.3"
+extra["awsVersion"] = "4.0.0"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -34,7 +35,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-kafka")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:${property("awsVersion")}"))
 	implementation("org.flywaydb:flyway-database-postgresql")
+	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:${property("awsVersion")}")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.springframework.cloud:spring-cloud-starter-config")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")

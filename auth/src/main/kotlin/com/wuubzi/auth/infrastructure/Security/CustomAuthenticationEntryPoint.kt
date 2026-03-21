@@ -19,7 +19,7 @@ class CustomAuthenticationEntryPoint (
         authException: AuthenticationException
     ) {
         val body = mapOf(
-            "message" to "No estas autorizado para acceder a este recurso",
+            "message" to "You are not authorized to access this resource.",
             "status" to HttpServletResponse.SC_UNAUTHORIZED,
             "exception" to authException::class.java.simpleName,
             "path" to request.requestURI,

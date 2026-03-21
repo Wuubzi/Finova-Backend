@@ -32,6 +32,7 @@
 		implementation("org.springframework.boot:spring-boot-starter-actuator")
 		implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 		implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+		implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 		implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 		implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 		implementation("org.springframework.boot:spring-boot-webtestclient:${property("webtestclientVersion")}")

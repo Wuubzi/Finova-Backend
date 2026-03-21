@@ -1,6 +1,6 @@
 CREATE TABLE user_credentials (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_id UUID NOT NULL UNIQUE,
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
@@ -10,10 +10,10 @@ CREATE TABLE user_credentials (
 
 CREATE TABLE refresh_tokens (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_id UUID NOT NULL UNIQUE,
     token VARCHAR(255) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
     is_revoked BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user_credentials(id)
+    FOREIGN KEY (user_id) REFERENCES user_credentials(user_id)
 )

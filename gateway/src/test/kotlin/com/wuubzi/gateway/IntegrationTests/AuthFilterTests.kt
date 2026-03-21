@@ -3,6 +3,7 @@ package com.wuubzi.gateway.IntegrationTests
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -17,7 +18,6 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import java.nio.charset.StandardCharsets
 import java.util.*
 
 @ActiveProfiles("test")
@@ -27,7 +27,7 @@ class AuthFilterTests(
     @Autowired private val webTestClient: WebTestClient
 ) {
 
-    @Value($$"${jwt.secret}")
+    @Value("\${jwt.secret}")
     lateinit var secret: String
 
     companion object {
@@ -39,7 +39,6 @@ class AuthFilterTests(
         fun setup() {
             wireMockServer.start()
 
-            // Stub para la ruta de auth (pública)
             wireMockServer.stubFor(
                 get(urlPathMatching("/api/v1/auth/.*"))
                     .willReturn(aResponse()
@@ -48,7 +47,6 @@ class AuthFilterTests(
                         .withBody("""{"status":"OK"}"""))
             )
 
-            // Stub para la ruta de users (protegida — solo llega si el token es válido)
             wireMockServer.stubFor(
                 get(urlPathMatching("/api/v1/user/.*"))
                     .willReturn(aResponse()
@@ -65,18 +63,14 @@ class AuthFilterTests(
         }
     }
 
-
-
     @TestConfiguration
     class TestRoutesConfig {
         @Bean
         fun testRoutes(builder: RouteLocatorBuilder): RouteLocator {
             return builder.routes()
-                // Ruta pública — sin AuthFilter
                 .route("auth") { r ->
                     r.path("/api/v1/auth/**").uri("http://localhost:7001")
                 }
-                // Ruta protegida — con AuthFilter
                 .route("users") { r ->
                     r.path("/api/v1/user/**")
                         .uri("http://localhost:7001")
@@ -86,14 +80,16 @@ class AuthFilterTests(
     }
 
     private fun generateValidToken(): String {
-        val key = Keys.hmacShaKeyFor(secret.toByteArray(StandardCharsets.UTF_8))
+        // CAMBIO CRÍTICO: Decodificar de Base64 igual que JwtService
+        val keyBytes = Decoders.BASE64.decode(secret)
+        val key = Keys.hmacShaKeyFor(keyBytes)
+
         return Jwts.builder()
             .subject("carlos")
             .expiration(Date(System.currentTimeMillis() + 60000))
             .signWith(key)
             .compact()
     }
-
 
     @Test
     fun loginEndpointShouldNotRequireAuthentication() {
@@ -134,6 +130,8 @@ class AuthFilterTests(
     @Test
     fun shouldReturn200WhenTokenIsValid() {
         val token = generateValidToken()
+
+
         webTestClient.get()
             .uri(URL_USER)
             .header("Authorization", "Bearer $token")

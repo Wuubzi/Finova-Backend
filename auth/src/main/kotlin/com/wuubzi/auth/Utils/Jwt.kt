@@ -21,6 +21,7 @@ class Jwt{
     lateinit var key: SecretKey
 
 
+
     @PostConstruct
     fun init() {
         val keyBytes = Decoders.BASE64.decode(secret)

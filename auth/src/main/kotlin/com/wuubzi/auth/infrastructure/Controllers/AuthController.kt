@@ -22,16 +22,22 @@ import com.wuubzi.auth.application.Ports.`in`.ValidateOTPUseCase
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
+import jakarta.validation.ValidationException
+import jakarta.validation.Validator
 import org.apache.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
+import tools.jackson.databind.ObjectMapper
 
 @RestController
 @RequestMapping("api/v1/auth/")
 class AuthController(
+    private val objectMapper: ObjectMapper,
     private val register: CreateUserUseCase,
     private val login: LoginUserUseCase,
     private val logoutUseCase: LogoutUseCase,
@@ -39,12 +45,23 @@ class AuthController(
     private  val validateOTPUseCase: ValidateOTPUseCase,
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val refreshTokenUseCase: RefreshTokenUseCase,
-    private val dateFormatter: DateFormatter
+    private val dateFormatter: DateFormatter,
+    private val validator: Validator
 ){
 
-    @PostMapping("register")
-    fun register(@Valid @RequestBody userRequest: UserRequest, request: HttpServletRequest ): ResponseEntity<Response> {
-        register.createUser(userRequest)
+    @PostMapping("register", consumes = ["multipart/form-data"])
+    fun register(
+        @Valid @RequestPart("user") userRequest: String,
+        @RequestPart("profile") profile: MultipartFile,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> {
+        val user = ObjectMapper().readValue(userRequest, UserRequest::class.java)
+        val violations = validator.validate(user)
+        if (violations.isNotEmpty()) {
+            val errors = violations.joinToString(", ") { "${it.propertyPath}: ${it.message}" }
+            throw ValidationException(errors)
+        }
+        register.createUser(user, profile)
         val responseBody = Response (
             message = "Usuario registrado exitosamente",
             url = request.requestURL.toString(),
@@ -60,7 +77,7 @@ class AuthController(
 
        val tokenResponse  = login.login(loginRequest)
         return LoginResponse (
-            message = "Usuario registrado exitosamente",
+            message = "Login exitoso",
             url = request.requestURL.toString(),
             token = tokenResponse.accessToken,
             refreshToken = tokenResponse.refreshToken,

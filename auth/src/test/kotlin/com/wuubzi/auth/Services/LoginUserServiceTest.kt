@@ -24,6 +24,7 @@ import java.util.UUID
 
 const val REFRESH_TOKEN_TEST = "refresh-token-123"
 const val ACCESS_TOKEN_TEST = "access-token-123"
+
 @ExtendWith(MockitoExtension::class)
 class LoginUserServiceTest {
 
@@ -51,8 +52,8 @@ class LoginUserServiceTest {
         // GIVEN
         val loginRequest = LoginRequest(email, password)
         val user = UserCredentials(
-            id = userId,
-            userId = UUID.randomUUID(),
+            id = UUID.randomUUID(),
+            userId = userId,  // Usamos el userId definido arriba
             email = email,
             password = "hashed_password",
             role = "USER",
@@ -63,7 +64,8 @@ class LoginUserServiceTest {
         whenever(userCredentialsRepository.findByEmail(email)).thenReturn(user)
         whenever(passwordEncoder.matches(password, user.password)).thenReturn(true)
         whenever(jwtPort.generateRefreshToken()).thenReturn(REFRESH_TOKEN_TEST)
-        whenever(jwtPort.generateToken(userId)).thenReturn(ACCESS_TOKEN_TEST)
+        whenever(jwtPort.generateToken(any())).thenReturn(ACCESS_TOKEN_TEST)  // ← Cambio: usar any()
+        whenever(refreshTokenRepositoryPort.findByUserId(userId)).thenReturn(null)  // ← Agregar: no existe token previo
 
         // WHEN
         val response = loginUserService.login(loginRequest)
@@ -71,6 +73,9 @@ class LoginUserServiceTest {
         // THEN
         assertEquals(ACCESS_TOKEN_TEST, response.accessToken)
         assertEquals(REFRESH_TOKEN_TEST, response.refreshToken)
+
+        // Verificar que se generó el token con el userId correcto
+        verify(jwtPort).generateToken(userId)
 
         // Verificar que se guardó el refresh token en la base de datos
         val refreshTokenCaptor = argumentCaptor<RefreshToken>()
@@ -80,6 +85,52 @@ class LoginUserServiceTest {
         assertEquals(userId, savedToken.userId)
         assertEquals(REFRESH_TOKEN_TEST, savedToken.token)
         assertEquals(false, savedToken.isRevoked)
+    }
+
+    @Test
+    fun shouldUpdateExistingRefreshToken() {
+        // GIVEN
+        val loginRequest = LoginRequest(email, password)
+        val user = UserCredentials(
+            id = UUID.randomUUID(),
+            userId = userId,
+            email = email,
+            password = "hashed_password",
+            role = "USER",
+            isActive = true,
+            createdAt = Timestamp(System.currentTimeMillis())
+        )
+
+        val existingRefreshToken = RefreshToken(
+            id = UUID.randomUUID(),
+            userId = userId,
+            token = "old-refresh-token",
+            expiresAt = java.time.Instant.now().plusMillis(7 * 24 * 60 * 60 * 1000),
+            isRevoked = false,
+            createdAt = java.time.Instant.now()
+        )
+
+        whenever(userCredentialsRepository.findByEmail(email)).thenReturn(user)
+        whenever(passwordEncoder.matches(password, user.password)).thenReturn(true)
+        whenever(jwtPort.generateRefreshToken()).thenReturn(REFRESH_TOKEN_TEST)
+        whenever(jwtPort.generateToken(any())).thenReturn(ACCESS_TOKEN_TEST)
+        whenever(refreshTokenRepositoryPort.findByUserId(userId)).thenReturn(existingRefreshToken)
+
+        // WHEN
+        val response = loginUserService.login(loginRequest)
+
+        // THEN
+        assertEquals(ACCESS_TOKEN_TEST, response.accessToken)
+        assertEquals(REFRESH_TOKEN_TEST, response.refreshToken)
+
+        // Verificar que se actualizó el token existente
+        val refreshTokenCaptor = argumentCaptor<RefreshToken>()
+        verify(refreshTokenRepositoryPort).save(refreshTokenCaptor.capture())
+
+        val updatedToken = refreshTokenCaptor.firstValue
+        assertEquals(existingRefreshToken.id, updatedToken.id)  // Mismo ID (actualización)
+        assertEquals(REFRESH_TOKEN_TEST, updatedToken.token)  // Token nuevo
+        assertEquals(false, updatedToken.isRevoked)
     }
 
     @Test
@@ -96,12 +147,40 @@ class LoginUserServiceTest {
     }
 
     @Test
+    fun shouldThrowExceptionWhenUserIsInactive() {
+        // GIVEN
+        val loginRequest = LoginRequest(email, password)
+        val inactiveUser = UserCredentials(
+            id = UUID.randomUUID(),
+            userId = userId,
+            email = email,
+            password = "hashed_password",
+            role = "USER",
+            isActive = false,  // Usuario inactivo
+            createdAt = Timestamp(System.currentTimeMillis())
+        )
+
+        whenever(userCredentialsRepository.findByEmail(email)).thenReturn(inactiveUser)
+
+        // WHEN & THEN
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            loginUserService.login(loginRequest)
+        }
+        assertEquals("User with email $email is inactive", exception.message)
+
+        // Verificar que NO se validó la contraseña ni se generaron tokens
+        verify(passwordEncoder, org.mockito.Mockito.never()).matches(any(), any())
+        verify(jwtPort, org.mockito.Mockito.never()).generateToken(any())
+        verify(refreshTokenRepositoryPort, org.mockito.Mockito.never()).save(any())
+    }
+
+    @Test
     fun shouldThrowExceptionWhenPasswordIsInvalid() {
         // GIVEN
         val loginRequest = LoginRequest(email, "wrong_password")
         val user = UserCredentials(
-            id = userId,
-            userId = UUID.randomUUID(),
+            id = UUID.randomUUID(),
+            userId = userId,
             email = email,
             password = "hashed_password",
             role = "USER",

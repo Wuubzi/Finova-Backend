@@ -7,5 +7,6 @@ import java.util.UUID
 
 interface UserCredentialsRepository: JpaRepository<UserCredentialsEntity, UUID> {
     fun save(userCredentials: UserCredentials): UserCredentialsEntity
+    fun findByUserId(userId: UUID): UserCredentialsEntity?
     fun findByEmail(email: String?): UserCredentialsEntity?
 }

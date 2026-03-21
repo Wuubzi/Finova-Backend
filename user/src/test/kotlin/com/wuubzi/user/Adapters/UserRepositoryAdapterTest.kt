@@ -36,7 +36,7 @@ class UserRepositoryAdapterTest {
         val domainUser = User(
             idUser = userId,
             firstName = "Junior",
-            lastName = "Tu Papa",
+            lastName = "Tu Pa",
             phone = "12312312312",
             documentNumber = documentNumber,
             address = "Calle 123",
@@ -107,7 +107,7 @@ class UserRepositoryAdapterTest {
             this.idUser = userId
             this.documentNumber = expectedDoc
             this.firstName = "Junior"
-            this.lastName = "Tu Papa"
+            this.lastName = "Tu Pap"
             this.address = "Calle 72"
             this.phone = "3000000"
             this.profileUrl = "http://image.com"

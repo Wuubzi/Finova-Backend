@@ -31,7 +31,7 @@ class UpdateUserServiceTest {
     private val userId = UUID.randomUUID()
 
     @Test
-    fun `should update user successfully when user exists`() {
+    fun shouldUpdateUserSuccessfullyWhenUserExists() {
         // GIVEN: El usuario original en la base de datos
         val originalUser = User(
             idUser = userId,
@@ -73,7 +73,7 @@ class UpdateUserServiceTest {
     }
 
     @Test
-    fun `should throw exception when user to update is not found`() {
+    fun shouldThrowExceptionWhenUserToUpdateIsNotFound() {
         // GIVEN
         val updateRequest = UpdateRequestDTO(
             firstName = "New",

@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "4.0.3"
 	id("io.spring.dependency-management") version "1.1.7"
 	kotlin("plugin.jpa") version "2.2.21"
+	jacoco
 }
 
 group = "com.wuubzi"
@@ -79,4 +80,34 @@ tasks.withType<Test> {
 	systemProperty("spring.datasource.url", "jdbc:h2:mem:testdb")
 	systemProperty("spring.datasource.driver-class-name", "org.h2.Driver")
 	systemProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect")
+}
+
+
+tasks.withType<Test> {
+	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+tasks.jacocoTestReport {
+	dependsOn(tasks.withType<Test>())
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
+
+
+	classDirectories.setFrom(
+		files(classDirectories.files.map {
+			fileTree(it) {
+				exclude(
+					"**/*Test.class",
+					"**/*Tests.class",
+					"**/*Test$*.class",
+					"**/*TestKt.class",
+					"**/config/**",
+					"**/*Application.class",
+					"**/*ApplicationKt.class"
+				)
+			}
+		})
+	)
 }

@@ -1,5 +1,6 @@
 package com.wuubzi.user.Services
 
+import com.wuubzi.user.application.Ports.Out.CachePort
 import com.wuubzi.user.application.Ports.Out.UserRepositoryPort
 import com.wuubzi.user.application.Services.GetUserService
 import com.wuubzi.user.domain.Models.User
@@ -20,6 +21,9 @@ class GetUserServiceTest {
 
     @Mock
     lateinit var userRepository: UserRepositoryPort
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     @InjectMocks
     lateinit var getUserService: GetUserService

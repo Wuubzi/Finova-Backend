@@ -1,6 +1,7 @@
 package com.wuubzi.user.Services
 
 import com.wuubzi.user.application.DTOS.Events.UserDeletedEvent
+import com.wuubzi.user.application.Ports.Out.CachePort
 import com.wuubzi.user.application.Ports.Out.KafkaPort
 import com.wuubzi.user.application.Ports.Out.UserRepositoryPort
 import com.wuubzi.user.application.Services.DeleteUserService
@@ -25,6 +26,10 @@ class DeleteUserServiceTest {
 
     @Mock
     lateinit var userRepository: UserRepositoryPort
+
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     @Mock
     lateinit var kafka: KafkaPort

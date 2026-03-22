@@ -1,6 +1,7 @@
 package com.wuubzi.user.Services
 
 import com.wuubzi.user.application.DTOS.Request.UpdateRequestDTO
+import com.wuubzi.user.application.Ports.Out.CachePort
 import com.wuubzi.user.application.Ports.Out.UserRepositoryPort
 import com.wuubzi.user.application.Services.UpdateUserService
 import com.wuubzi.user.domain.Models.User
@@ -27,6 +28,10 @@ class UpdateUserServiceTest {
 
     @InjectMocks
     lateinit var updateUserService: UpdateUserService
+
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     private val userId = UUID.randomUUID()
 

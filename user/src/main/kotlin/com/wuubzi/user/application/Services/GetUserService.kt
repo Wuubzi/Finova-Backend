@@ -5,7 +5,6 @@ import com.wuubzi.user.application.Ports.Out.CachePort
 import com.wuubzi.user.application.Ports.Out.UserRepositoryPort
 import com.wuubzi.user.domain.Models.User
 import org.springframework.stereotype.Service
-import tools.jackson.databind.ObjectMapper
 import java.time.Duration
 import java.util.UUID
 

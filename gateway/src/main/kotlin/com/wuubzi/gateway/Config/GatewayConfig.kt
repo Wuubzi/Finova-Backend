@@ -15,8 +15,8 @@ class GatewayConfig {
         return builder.routes()
             .route("auth") { r -> r.path("/api/v1/auth/**").uri("lb://AUTH") }
             .route("user") { r -> r.path("/api/v1/users/**").uri("lb://USER") }
-            .route("transaction") { r -> r.path("/api/v1/transaction/**").uri("http://localhost:8030") }
-            .route("account") { r -> r.path("/api/v1/account/**").uri("http://localhost:8040")  }
+            .route("transaction") { r -> r.path("/api/v1/transaction/**").uri("lb://TRANSACTION") }
+            .route("account") { r -> r.path("/api/v1/account/**").uri("lb://ACCOUNT")  }
             .build()
     }
 

@@ -17,6 +17,8 @@ import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
 
+const val ACCOUNT_ALIAS = "Cuenta de Ahorros"
+
 @ExtendWith(MockitoExtension::class)
 class AccountRepositoryAdapterTest {
 
@@ -42,7 +44,7 @@ class AccountRepositoryAdapterTest {
             balance = 1000.0,
             availableBalance = 1000.0,
             status = "ACTIVE",
-            alias = "Cuenta de Ahorros",
+            alias = ACCOUNT_ALIAS,
             overdraftLimit = 0.0,
             createdAt = now,
             updatedAt = now
@@ -57,7 +59,7 @@ class AccountRepositoryAdapterTest {
         entityResponse.balance = 1000.0
         entityResponse.availableBalance = 1000.0
         entityResponse.status = "ACTIVE"
-        entityResponse.alias = "Cuenta de Ahorros"
+        entityResponse.alias = ACCOUNT_ALIAS
         entityResponse.overdraftLimit = 0.0
         entityResponse.createdAt = now
         entityResponse.updatedAt = now
@@ -76,7 +78,7 @@ class AccountRepositoryAdapterTest {
         assertEquals(1000.0, result.balance)
         assertEquals(1000.0, result.availableBalance)
         assertEquals("ACTIVE", result.status)
-        assertEquals("Cuenta de Ahorros", result.alias)
+        assertEquals(ACCOUNT_ALIAS, result.alias)
         assertEquals(0.0, result.overdraftLimit)
         assertEquals(now, result.createdAt)
         assertEquals(now, result.updatedAt)

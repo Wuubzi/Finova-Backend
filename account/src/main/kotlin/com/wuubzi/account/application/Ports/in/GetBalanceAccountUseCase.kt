@@ -4,6 +4,6 @@ import com.wuubzi.account.application.DTOS.Response.AccountBalanceResponse
 import java.util.UUID
 
 
-interface GetBalanceAccountUseCase {
+fun interface GetBalanceAccountUseCase {
     fun getBalance(userId: UUID): AccountBalanceResponse
 }

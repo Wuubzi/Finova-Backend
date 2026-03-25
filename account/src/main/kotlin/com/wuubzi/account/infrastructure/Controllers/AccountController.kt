@@ -13,7 +13,6 @@ import com.wuubzi.account.application.Ports.`in`.UpdateAccountUseCase
 import com.wuubzi.account.domain.models.AccountModel
 import com.wuubzi.account.utils.DateFormatter
 import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.apache.http.HttpStatus
 import org.springframework.http.ResponseEntity

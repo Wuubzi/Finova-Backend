@@ -11,7 +11,7 @@ class UnBlockAccountService(
 ): UnBlockAccountUseCase {
     override fun unBlockAccount(userId: UUID) {
         val accountExists = accountRepository.findByUserId(userId) ?: throw IllegalArgumentException("User with id $userId not found")
-        if (accountExists.status == "ACTIVE") throw IllegalArgumentException("User with id $userId already active")
+        require(accountExists.status != "ACTIVE") { "User with id $userId already active" }
         val newAccount = accountExists.copy(
             status = "ACTIVE"
         )

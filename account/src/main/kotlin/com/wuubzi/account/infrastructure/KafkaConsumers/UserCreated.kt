@@ -18,7 +18,7 @@ class UserCreated(
     )
     fun listen(data: UserRequestEvent) {
         val user = userRepository.findByUserId(data.idUser)
-        if (user != null) throw IllegalArgumentException("User with id ${data.idUser} already exists")
+        require(user == null) { "User with id ${data.idUser} already exists" }
 
         val userSaved = UserCacheEntity().apply {
             userId = data.idUser

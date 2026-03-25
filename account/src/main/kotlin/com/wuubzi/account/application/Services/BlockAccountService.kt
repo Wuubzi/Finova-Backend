@@ -11,7 +11,7 @@ class BlockAccountService(
 ): BlockAccountUseCase {
     override fun blockAccount(userId: UUID) {
         val accountExists = accountRepository.findByUserId(userId) ?: throw IllegalArgumentException("User with id $userId not found")
-       if (accountExists.status == "BLOCKED") throw IllegalArgumentException("User with id $userId already blocked")
+        require(accountExists.status != "BLOCKED") { "User with id $userId already blocked" }
         val newAccount = accountExists.copy(
             status = "BLOCKED"
         )

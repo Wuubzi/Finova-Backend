@@ -4,6 +4,6 @@ import com.wuubzi.account.domain.models.UserCachedModel
 
 import java.util.UUID
 
-interface UserCacheRepositoryPort {
+fun interface UserCacheRepositoryPort {
     fun findByUserId(userId: UUID): UserCachedModel?
 }

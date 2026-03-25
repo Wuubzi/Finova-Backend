@@ -37,7 +37,6 @@ import tools.jackson.databind.ObjectMapper
 @RestController
 @RequestMapping("api/v1/auth/")
 class AuthController(
-    private val objectMapper: ObjectMapper,
     private val register: CreateUserUseCase,
     private val login: LoginUserUseCase,
     private val logoutUseCase: LogoutUseCase,

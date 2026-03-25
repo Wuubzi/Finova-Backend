@@ -22,6 +22,7 @@ repositories {
 
 extra["springCloudVersion"] = "2025.1.0"
 extra["jwtVersion"] = "0.13.0"
+extra["mockitoKotlinVersion"] = "6.2.3"
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -44,6 +45,7 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:${property("jwtVersion")}")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-kafka-test")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:${property("mockitoKotlinVersion")}")
 	testImplementation("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server-test")

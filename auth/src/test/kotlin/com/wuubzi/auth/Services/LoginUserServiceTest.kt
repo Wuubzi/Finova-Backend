@@ -64,7 +64,7 @@ class LoginUserServiceTest {
         whenever(userCredentialsRepository.findByEmail(email)).thenReturn(user)
         whenever(passwordEncoder.matches(password, user.password)).thenReturn(true)
         whenever(jwtPort.generateRefreshToken()).thenReturn(REFRESH_TOKEN_TEST)
-        whenever(jwtPort.generateToken(any())).thenReturn(ACCESS_TOKEN_TEST)  // ← Cambio: usar any()
+        whenever(jwtPort.generateToken(any(), any())).thenReturn(ACCESS_TOKEN_TEST)  // ← Cambio: usar any()
         whenever(refreshTokenRepositoryPort.findByUserId(userId)).thenReturn(null)  // ← Agregar: no existe token previo
 
         // WHEN
@@ -75,7 +75,7 @@ class LoginUserServiceTest {
         assertEquals(REFRESH_TOKEN_TEST, response.refreshToken)
 
         // Verificar que se generó el token con el userId correcto
-        verify(jwtPort).generateToken(userId)
+        verify(jwtPort).generateToken(userId, email)
 
         // Verificar que se guardó el refresh token en la base de datos
         val refreshTokenCaptor = argumentCaptor<RefreshToken>()
@@ -113,7 +113,7 @@ class LoginUserServiceTest {
         whenever(userCredentialsRepository.findByEmail(email)).thenReturn(user)
         whenever(passwordEncoder.matches(password, user.password)).thenReturn(true)
         whenever(jwtPort.generateRefreshToken()).thenReturn(REFRESH_TOKEN_TEST)
-        whenever(jwtPort.generateToken(any())).thenReturn(ACCESS_TOKEN_TEST)
+        whenever(jwtPort.generateToken(any(), any())).thenReturn(ACCESS_TOKEN_TEST)
         whenever(refreshTokenRepositoryPort.findByUserId(userId)).thenReturn(existingRefreshToken)
 
         // WHEN
@@ -170,7 +170,7 @@ class LoginUserServiceTest {
 
         // Verificar que NO se validó la contraseña ni se generaron tokens
         verify(passwordEncoder, org.mockito.Mockito.never()).matches(any(), any())
-        verify(jwtPort, org.mockito.Mockito.never()).generateToken(any())
+        verify(jwtPort, org.mockito.Mockito.never()).generateToken(any(), any())
         verify(refreshTokenRepositoryPort, org.mockito.Mockito.never()).save(any())
     }
 
@@ -198,7 +198,7 @@ class LoginUserServiceTest {
         assertEquals("Invalid password", exception.message)
 
         // Verificar que NO se generaron tokens ni se guardó nada
-        verify(jwtPort, org.mockito.Mockito.never()).generateToken(any())
+        verify(jwtPort, org.mockito.Mockito.never()).generateToken(any(), any())
         verify(refreshTokenRepositoryPort, org.mockito.Mockito.never()).save(any())
     }
 }

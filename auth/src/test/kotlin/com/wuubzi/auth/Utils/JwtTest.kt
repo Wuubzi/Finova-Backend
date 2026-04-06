@@ -26,7 +26,7 @@ class JwtTest {
         val userId = UUID.randomUUID()
 
         // WHEN
-        val token = jwtUtils.generateToken(userId)
+        val token = jwtUtils.generateToken(userId, "test@finova.com")
         val isValid = jwtUtils.validateToken(token)
         val extractedUsername = jwtUtils.getUsername(token)
 

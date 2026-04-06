@@ -1,6 +1,7 @@
 package com.wuubzi.account.infrastructure.Exceptions
 
 import com.wuubzi.account.application.DTOS.Response.ErrorResponse
+import com.wuubzi.account.application.Exceptions.AccountNotFoundException
 import com.wuubzi.account.utils.DateFormatter
 import jakarta.validation.ValidationException
 import org.apache.http.HttpStatus
@@ -29,8 +30,30 @@ class GlobalExceptionHandler(
     }
 
 
+    @ExceptionHandler(AccountNotFoundException::class)
+    fun handleAccountNotFoundException(ex: AccountNotFoundException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message,
+            code = HttpStatus.SC_NOT_FOUND,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(error)
+    }
+
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgumentException(ex: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            message = ex.message,
+            code = HttpStatus.SC_BAD_REQUEST,
+            exception = ex.javaClass.simpleName,
+            path = dateFormatter.getDate()
+        )
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error)
+    }
+
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleIllegalStateException(ex: IllegalStateException): ResponseEntity<ErrorResponse> {
         val error = ErrorResponse(
             message = ex.message,
             code = HttpStatus.SC_BAD_REQUEST,

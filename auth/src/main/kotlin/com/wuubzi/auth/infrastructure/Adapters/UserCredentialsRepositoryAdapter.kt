@@ -6,6 +6,7 @@ import com.wuubzi.auth.infrastructure.Persistence.Mappers.toDomain
 import com.wuubzi.auth.infrastructure.Persistence.Mappers.toEntity
 import com.wuubzi.auth.infrastructure.Repositories.UserCredentialsRepository
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
 class UserCredentialsRepositoryAdapter(
@@ -14,4 +15,6 @@ class UserCredentialsRepositoryAdapter(
     override fun save(userCredentials: UserCredentials): UserCredentials = userCredentialsRepository.save(userCredentials.toEntity()).toDomain()
 
     override fun findByEmail(email: String?): UserCredentials?  = userCredentialsRepository.findByEmail(email)?.toDomain()
+
+    override fun findByUserId(userId: UUID): UserCredentials? = userCredentialsRepository.findByUserId(userId)?.toDomain()
 }

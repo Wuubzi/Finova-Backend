@@ -12,7 +12,8 @@ class RecoverPassword(
 
     @KafkaListener(
         topics = ["recover-password"],
-        groupId = "notification-service-v2"
+        groupId = "notification-service-v2",
+        containerFactory = "recoverPasswordKafkaListenerContainerFactory"
     )
     fun listen(data: RecoverPasswordRequest) {
         try {

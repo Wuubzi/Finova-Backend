@@ -6,5 +6,6 @@ import java.util.UUID
 
 interface AccountRepository: JpaRepository<AccountEntity, UUID> {
   fun findByUserId(userId: UUID): AccountEntity?
+  fun findByAccountNumber(accountNumber: String): AccountEntity?
   fun deleteByUserId(userId: UUID)
 }

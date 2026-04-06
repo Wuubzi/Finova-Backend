@@ -25,15 +25,16 @@ class JwtAdapterTest {
     fun shouldGenerateToken() {
         // GIVEN
         val userId = UUID.randomUUID()
+        val email = "test@finova.com"
         val expectedToken = "mocked-access-token"
-        whenever(jwtUtils.generateToken(userId)).thenReturn(expectedToken)
+        whenever(jwtUtils.generateToken(userId, email)).thenReturn(expectedToken)
 
         // WHEN
-        val result = jwtAdapter.generateToken(userId)
+        val result = jwtAdapter.generateToken(userId, email)
 
         // THEN
         assertEquals(expectedToken, result)
-        verify(jwtUtils).generateToken(userId)
+        verify(jwtUtils).generateToken(userId, email)
     }
 
     @Test

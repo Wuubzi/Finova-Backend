@@ -28,9 +28,10 @@ class Jwt{
         key = Keys.hmacShaKeyFor(keyBytes)
     }
 
-    fun generateToken(userId: UUID): String {
+    fun generateToken(userId: UUID, email: String): String {
         return Jwts.builder()
             .subject(userId.toString())
+            .claim("email", email)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + EXPIRATION_TIME))
             .signWith(key)

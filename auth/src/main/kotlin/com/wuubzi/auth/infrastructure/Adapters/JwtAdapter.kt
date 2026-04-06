@@ -9,8 +9,8 @@ import java.util.UUID
 class JwtAdapter(
     private val jwtUtils: Jwt
 ): JwtPort {
-    override fun generateToken(userId: UUID): String {
-       return jwtUtils.generateToken(userId)
+    override fun generateToken(userId: UUID, email: String): String {
+       return jwtUtils.generateToken(userId, email)
     }
 
     override fun validateToken(token: String): Boolean {

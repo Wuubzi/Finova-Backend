@@ -2,6 +2,7 @@ package com.wuubzi.account.application.Services
 
 import com.wuubzi.account.application.DTOS.Request.AccountRequestDTO
 import com.wuubzi.account.application.Ports.out.AccountRepositoryPort
+import com.wuubzi.account.application.Ports.out.CachePort
 import com.wuubzi.account.application.Ports.out.UserCacheRepositoryPort
 import com.wuubzi.account.domain.models.AccountModel
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,6 +23,9 @@ class CreateAccountServiceTest {
 
     @Mock
     lateinit var userCacheRepository: UserCacheRepositoryPort
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     @InjectMocks
     lateinit var createAccountService: CreateAccountService
@@ -44,6 +48,7 @@ class CreateAccountServiceTest {
         // Mockeamos que el usuario SÍ existe en caché y NO tiene cuenta aún
         whenever(userCacheRepository.findByUserId(userId)).thenReturn(mock())
         whenever(accountRepository.findByUserId(userId)).thenReturn(null)
+        whenever(accountRepository.save(any())).thenAnswer { it.arguments[0] as AccountModel }
 
         // WHEN
         createAccountService.createAccount(userId, requestDTO)

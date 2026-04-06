@@ -41,6 +41,9 @@ class AccountControllerTest {
     lateinit var getAccountUseCase: GetAccountUseCase
 
     @Mock
+    lateinit var getAccountByAccountNumberUseCase: GetAccountByAccountNumberUseCase
+
+    @Mock
     lateinit var deleteAccountUseCase: DeleteAccountUseCase
 
     @Mock

@@ -47,6 +47,10 @@ class TransferServiceTest {
     private val toAccountNumber = "22222222222222222222"
     private val now = Timestamp.from(Instant.now())
 
+    companion object {
+        private const val TEST_EMAIL = "test@email.com"
+    }
+
     private fun mockAccount(
         id: UUID = fromAccountId,
         number: String = fromAccountNumber,
@@ -90,7 +94,7 @@ class TransferServiceTest {
         whenever(transactionRepository.save(any())).thenReturn(mockTransactionModel())
 
         // WHEN
-        transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+        transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
 
         // THEN
         verify(transactionRepository).save(any())
@@ -103,7 +107,7 @@ class TransferServiceTest {
     fun shouldThrowWhenSameAccount() {
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, fromAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, fromAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Cannot transfer to the same account", exception.message)
     }
@@ -115,7 +119,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Source account with number $fromAccountNumber not found", exception.message)
     }
@@ -128,7 +132,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Destination account with number $toAccountNumber not found", exception.message)
     }
@@ -143,7 +147,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Source account is not active", exception.message)
     }
@@ -158,7 +162,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Destination account is not active", exception.message)
     }
@@ -173,7 +177,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Currency mismatch between accounts", exception.message)
     }
@@ -188,7 +192,7 @@ class TransferServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, "test@email.com")
+            transferService.transfer(fromAccountNumber, toAccountNumber, 300.0, TEST_EMAIL)
         }
         assertEquals("Insufficient balance", exception.message)
         verify(transactionRepository, never()).save(any())

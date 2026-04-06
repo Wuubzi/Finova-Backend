@@ -44,6 +44,10 @@ class DepositServiceTest {
     private val accountNumber = "12345678901234567890"
     private val now = Timestamp.from(Instant.now())
 
+    companion object {
+        private const val TEST_EMAIL = "test@email.com"
+    }
+
     private fun mockAccount(status: String = "ACTIVE") = AccountResponse(
         accountId = accountId,
         accountNumber = accountNumber,
@@ -78,7 +82,7 @@ class DepositServiceTest {
         whenever(transactionRepository.save(any())).thenReturn(mockTransactionModel())
 
         // WHEN
-        depositService.deposit(accountNumber, 500.0, "test@email.com")
+        depositService.deposit(accountNumber, 500.0, TEST_EMAIL)
 
         // THEN
         verify(webClient).getAccountByAccountNumber(accountNumber)
@@ -94,7 +98,7 @@ class DepositServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            depositService.deposit(accountNumber, 500.0, "test@email.com")
+            depositService.deposit(accountNumber, 500.0, TEST_EMAIL)
         }
         assertEquals("Account with number $accountNumber not found", exception.message)
     }
@@ -106,7 +110,7 @@ class DepositServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            depositService.deposit(accountNumber, 500.0, "test@email.com")
+            depositService.deposit(accountNumber, 500.0, TEST_EMAIL)
         }
         assertEquals("Account is not active", exception.message)
     }

@@ -6,6 +6,17 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 
+data class TransactionHtmlParams(
+    val transactionId: String,
+    val typeLabel: String,
+    val statusLabel: String,
+    val statusColor: String,
+    val statusIcon: String,
+    val amount: Double,
+    val currency: String,
+    val description: String?
+)
+
 @Service
 class MailService(
     private val mailSender: JavaMailSender
@@ -50,22 +61,14 @@ class MailService(
 
         helper.setTo(email)
         helper.setSubject("$statusIcon $subject - $typeLabel")
-        helper.setText(buildTransactionHtml(transactionId, typeLabel, statusLabel, statusColor, statusIcon, amount, currency, description), true)
+        helper.setText(buildTransactionHtml(TransactionHtmlParams(transactionId, typeLabel, statusLabel, statusColor, statusIcon, amount, currency, description)), true)
 
         mailSender.send(message)
     }
 
-    private fun buildTransactionHtml(
-        transactionId: String,
-        typeLabel: String,
-        statusLabel: String,
-        statusColor: String,
-        statusIcon: String,
-        amount: Double,
-        currency: String,
-        description: String?
-    ): String {
-        val formattedAmount = "%,.2f".format(amount)
+    private fun buildTransactionHtml(params: TransactionHtmlParams): String {
+        val (transactionId, typeLabel, statusLabel, statusColor, statusIcon, _, currency, description) = params
+        val formattedAmount = "%,.2f".format(params.amount)
         return """
             <!DOCTYPE html>
             <html lang="en">

@@ -45,6 +45,10 @@ class WithdrawServiceTest {
     private val accountNumber = "12345678901234567890"
     private val now = Timestamp.from(Instant.now())
 
+    companion object {
+        private const val TEST_EMAIL = "test@email.com"
+    }
+
     private fun mockAccount(status: String = "ACTIVE", balance: Double = 1000.0) = AccountResponse(
         accountId = accountId,
         accountNumber = accountNumber,
@@ -79,7 +83,7 @@ class WithdrawServiceTest {
         whenever(transactionRepository.save(any())).thenReturn(mockTransactionModel())
 
         // WHEN
-        withdrawService.withdraw(accountNumber, 200.0, "test@email.com")
+        withdrawService.withdraw(accountNumber, 200.0, TEST_EMAIL)
 
         // THEN
         verify(webClient).getAccountByAccountNumber(accountNumber)
@@ -92,7 +96,7 @@ class WithdrawServiceTest {
     fun shouldThrowWhenAmountIsZeroOrNegative() {
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            withdrawService.withdraw(accountNumber, 0.0, "test@email.com")
+            withdrawService.withdraw(accountNumber, 0.0, TEST_EMAIL)
         }
         assertEquals("Withdraw amount must be greater than zero", exception.message)
     }
@@ -104,7 +108,7 @@ class WithdrawServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            withdrawService.withdraw(accountNumber, 200.0, "test@email.com")
+            withdrawService.withdraw(accountNumber, 200.0, TEST_EMAIL)
         }
         assertEquals("Account with number $accountNumber not found", exception.message)
     }
@@ -116,7 +120,7 @@ class WithdrawServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            withdrawService.withdraw(accountNumber, 200.0, "test@email.com")
+            withdrawService.withdraw(accountNumber, 200.0, TEST_EMAIL)
         }
         assertEquals("Account is not active", exception.message)
     }
@@ -128,7 +132,7 @@ class WithdrawServiceTest {
 
         // WHEN & THEN
         val exception = assertThrows<IllegalArgumentException> {
-            withdrawService.withdraw(accountNumber, 200.0, "test@email.com")
+            withdrawService.withdraw(accountNumber, 200.0, TEST_EMAIL)
         }
         assertEquals("Insufficient balance", exception.message)
         verify(transactionRepository, never()).save(any())

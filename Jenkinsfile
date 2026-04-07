@@ -2,13 +2,24 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_NAME = 'Finova-Backend'
-        TESTCONTAINERS_RYUK_DISABLED = 'true'
-        TESTCONTAINERS_CHECKS_DISABLE = 'true'
-        DOCKER_HOST = 'unix:///var/run/docker.sock'
+        PROJECT_NAME       = 'Finova-Backend'
+        TESTCONTAINERS_RYUK_DISABLED   = 'true'
+        TESTCONTAINERS_CHECKS_DISABLE  = 'true'
+        DOCKER_HOST        = 'unix:///var/run/docker.sock'
+
+        // ====== CD Configuration ======
+        AWS_REGION         = 'us-east-1'
+        ECR_REGISTRY       = credentials('ecr-registry-url')
+        EC2_HOST           = credentials('ec2-host')
+        EC2_USER           = 'ec2-user'
+        IMAGE_TAG          = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+        DEPLOY_DIR         = '/home/ec2-user/finova'
+
+        MICROSERVICES      = 'eureka,config,gateway,auth,user,account,transaction,notification'
     }
 
     stages {
+        // ==================== CI ====================
         stage('Checkout') {
             steps {
                 checkout scm
@@ -65,14 +76,156 @@ pipeline {
                 }
             }
         }
+
+        // ==================== CD (solo en main) ====================
+        stage('Docker Build & Push to ECR') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🐳 Construyendo imágenes Docker y subiendo a ECR..."
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                    sh """
+                        aws ecr get-login-password --region ${AWS_REGION} | \
+                            docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    """
+
+                    script {
+                        def services = MICROSERVICES.split(',')
+                        for (svc in services) {
+                            def imageName = "${ECR_REGISTRY}/finova/${svc}-service:${IMAGE_TAG}"
+                            def imageLatest = "${ECR_REGISTRY}/finova/${svc}-service:latest"
+
+                            sh """
+                                echo "📦 Building ${svc}-service..."
+
+                                aws ecr describe-repositories --repository-names finova/${svc}-service --region ${AWS_REGION} || \
+                                    aws ecr create-repository --repository-name finova/${svc}-service --region ${AWS_REGION}
+
+                                docker build -t ${imageName} -t ${imageLatest} ./${svc}
+
+                                docker push ${imageName}
+                                docker push ${imageLatest}
+
+                                echo "✅ ${svc}-service pushed successfully"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to EC2') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🚀 Desplegando en EC2..."
+                sshagent(credentials: ['ec2-ssh-key']) {
+                    sh """
+                        scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}/docker-compose.yml
+
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'DEPLOY_SCRIPT'
+                            set -e
+                            cd ${DEPLOY_DIR}
+
+                            echo "🔑 Login a ECR..."
+                            aws ecr get-login-password --region ${AWS_REGION} | \
+                                docker login --username AWS --password-stdin ${ECR_REGISTRY}
+
+                            export ECR_REGISTRY=${ECR_REGISTRY}
+                            export IMAGE_TAG=${IMAGE_TAG}
+
+                            echo "⬇️ Pulling nuevas imágenes..."
+                            docker compose pull
+
+                            echo "🔄 Desplegando..."
+                            docker compose up -d auth-db user-db account-db transaction-db kafka redis
+                            sleep 10
+
+                            docker compose up -d eureka-service
+                            sleep 15
+
+                            docker compose up -d config-service
+                            sleep 10
+
+                            docker compose up -d auth-service user-service account-service transaction-service notification-service gateway-service
+
+                            echo "🧹 Limpiando imágenes antiguas..."
+                            docker image prune -f
+
+                            echo "📋 Estado de los servicios:"
+                            docker compose ps
+DEPLOY_SCRIPT
+                    """
+                }
+            }
+        }
+
+        stage('Health Check') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🏥 Verificando salud de los servicios..."
+                sshagent(credentials: ['ec2-ssh-key']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'HEALTH_SCRIPT'
+                            set -e
+
+                            MAX_RETRIES=10
+                            RETRY_INTERVAL=15
+
+                            check_service() {
+                                local service_name=\$1
+                                local port=\$2
+                                for i in \$(seq 1 \$MAX_RETRIES); do
+                                    if curl -sf http://localhost:\${port}/actuator/health > /dev/null 2>&1; then
+                                        echo "✅ \${service_name} is healthy"
+                                        return 0
+                                    fi
+                                    echo "⏳ Waiting for \${service_name}... (\$i/\$MAX_RETRIES)"
+                                    sleep \$RETRY_INTERVAL
+                                done
+                                echo "❌ \${service_name} failed health check!"
+                                return 1
+                            }
+
+                            check_service "eureka-service"       8761
+                            check_service "config-service"       8888
+                            check_service "gateway-service"      8000
+                            check_service "auth-service"         8081
+                            check_service "user-service"         8082
+                            check_service "account-service"      8083
+                            check_service "transaction-service"  8084
+                            check_service "notification-service" 8085
+
+                            echo "🎉 Todos los servicios están saludables!"
+HEALTH_SCRIPT
+                    """
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo "✅ Pipeline exitoso en ${env.BRANCH_NAME} - PR listo para mergear"
+            script {
+                if (env.BRANCH_NAME == 'main') {
+                    echo "✅ CI/CD completo - Desplegado en EC2 con tag: ${IMAGE_TAG}"
+                } else {
+                    echo "✅ Pipeline CI exitoso en ${env.BRANCH_NAME} - PR listo para mergear"
+                }
+            }
         }
         failure {
-            echo "❌ Pipeline fallido en ${env.BRANCH_NAME} - PR bloqueado"
+            script {
+                if (env.BRANCH_NAME == 'main') {
+                    echo "❌ Pipeline CD fallido - Revisar deployment"
+                } else {
+                    echo "❌ Pipeline CI fallido en ${env.BRANCH_NAME} - PR bloqueado"
+                }
+            }
         }
         always {
             cleanWs()

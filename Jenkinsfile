@@ -78,6 +78,25 @@ pipeline {
         }
 
         // ==================== CD (solo en main) ====================
+        stage('Install AWS CLI') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "🔧 Instalando AWS CLI..."
+                sh '''
+                    if ! command -v aws &> /dev/null; then
+                        echo "AWS CLI no encontrada, instalando..."
+                        curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                        unzip -qo awscliv2.zip
+                        ./aws/install --update || sudo ./aws/install --update
+                        rm -rf awscliv2.zip aws
+                    fi
+                    aws --version
+                '''
+            }
+        }
+
         stage('Docker Build & Push to ECR') {
             when {
                 branch 'main'
@@ -85,27 +104,25 @@ pipeline {
             steps {
                 echo "🐳 Construyendo imágenes Docker y subiendo a ECR..."
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                    sh """
-                        aws ecr get-login-password --region ${AWS_REGION} | \
-                            docker login --username AWS --password-stdin ${ECR_REGISTRY}
-                    """
+                    sh '''
+                        aws ecr get-login-password --region $AWS_REGION | \
+                            docker login --username AWS --password-stdin $ECR_REGISTRY
+                    '''
 
                     script {
                         def services = MICROSERVICES.split(',')
                         for (svc in services) {
-                            def imageName = "${ECR_REGISTRY}/finova/${svc}-service:${IMAGE_TAG}"
-                            def imageLatest = "${ECR_REGISTRY}/finova/${svc}-service:latest"
-
                             sh """
                                 echo "📦 Building ${svc}-service..."
 
-                                aws ecr describe-repositories --repository-names finova/${svc}-service --region ${AWS_REGION} || \
-                                    aws ecr create-repository --repository-name finova/${svc}-service --region ${AWS_REGION}
+                                aws ecr describe-repositories --repository-names finova/${svc}-service --region \$AWS_REGION 2>/dev/null || \
+                                    aws ecr create-repository --repository-name finova/${svc}-service --region \$AWS_REGION
 
-                                docker build -t ${imageName} -t ${imageLatest} ./${svc}
+                                docker build -t \$ECR_REGISTRY/finova/${svc}-service:\$IMAGE_TAG \
+                                             -t \$ECR_REGISTRY/finova/${svc}-service:latest ./${svc}
 
-                                docker push ${imageName}
-                                docker push ${imageLatest}
+                                docker push \$ECR_REGISTRY/finova/${svc}-service:\$IMAGE_TAG
+                                docker push \$ECR_REGISTRY/finova/${svc}-service:latest
 
                                 echo "✅ ${svc}-service pushed successfully"
                             """
@@ -122,19 +139,23 @@ pipeline {
             steps {
                 echo "🚀 Desplegando en EC2..."
                 sshagent(credentials: ['ec2-ssh-key']) {
-                    sh """
-                        scp -o StrictHostKeyChecking=no docker-compose.yml ${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}/docker-compose.yml
+                    sh '''
+                        scp -o StrictHostKeyChecking=no docker-compose.yml $EC2_USER@$EC2_HOST:$DEPLOY_DIR/docker-compose.yml
 
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'DEPLOY_SCRIPT'
+                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
+                            ECR_REGISTRY=$ECR_REGISTRY \
+                            IMAGE_TAG=$IMAGE_TAG \
+                            AWS_REGION=$AWS_REGION \
+                            'bash -s' << 'DEPLOY_SCRIPT'
                             set -e
-                            cd ${DEPLOY_DIR}
+                            cd $HOME/finova
 
                             echo "🔑 Login a ECR..."
-                            aws ecr get-login-password --region ${AWS_REGION} | \
-                                docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                            aws ecr get-login-password --region $AWS_REGION | \
+                                docker login --username AWS --password-stdin $ECR_REGISTRY
 
-                            export ECR_REGISTRY=${ECR_REGISTRY}
-                            export IMAGE_TAG=${IMAGE_TAG}
+                            export ECR_REGISTRY=$ECR_REGISTRY
+                            export IMAGE_TAG=$IMAGE_TAG
 
                             echo "⬇️ Pulling nuevas imágenes..."
                             docker compose pull
@@ -157,7 +178,7 @@ pipeline {
                             echo "📋 Estado de los servicios:"
                             docker compose ps
 DEPLOY_SCRIPT
-                    """
+                    '''
                 }
             }
         }
@@ -169,8 +190,8 @@ DEPLOY_SCRIPT
             steps {
                 echo "🏥 Verificando salud de los servicios..."
                 sshagent(credentials: ['ec2-ssh-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} << 'HEALTH_SCRIPT'
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'bash -s' << 'HEALTH_SCRIPT'
                             set -e
 
                             MAX_RETRIES=10
@@ -202,7 +223,7 @@ DEPLOY_SCRIPT
 
                             echo "🎉 Todos los servicios están saludables!"
 HEALTH_SCRIPT
-                    """
+                    '''
                 }
             }
         }

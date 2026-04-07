@@ -28,6 +28,12 @@ import kotlin.test.assertEquals
 @ExtendWith(MockitoExtension::class)
 class TransactionEventConsumerTest {
 
+    companion object {
+        private const val TOPIC = "transactions.events"
+        private const val TEST_EMAIL = "test@email.com"
+        private const val TEST_DEPOSIT_DESCRIPTION = "Test deposit"
+    }
+
     @Mock
     lateinit var accountRepository: AccountRepository
 
@@ -76,8 +82,8 @@ class TransactionEventConsumerTest {
             toAccountId = toAccountId,
             currency = "USD",
             status = TransactionStatus.PENDING,
-            description = "Test deposit",
-            email = "test@email.com"
+            description = TEST_DEPOSIT_DESCRIPTION,
+            email = TEST_EMAIL
         )
         val account = createAccountEntity(toAccountId, 1000.0)
         whenever(accountRepository.findById(toAccountId)).thenReturn(Optional.of(account))
@@ -90,7 +96,7 @@ class TransactionEventConsumerTest {
         assertEquals(1500.0, account.balance)
         assertEquals(1500.0, account.availableBalance)
         verify(accountRepository).save(account)
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test
@@ -105,7 +111,7 @@ class TransactionEventConsumerTest {
             currency = "USD",
             status = TransactionStatus.PENDING,
             description = "Test withdraw",
-            email = "test@email.com"
+            email = TEST_EMAIL
         )
         val account = createAccountEntity(fromAccountId, 1000.0)
         whenever(accountRepository.findById(fromAccountId)).thenReturn(Optional.of(account))
@@ -133,7 +139,7 @@ class TransactionEventConsumerTest {
             currency = "USD",
             status = TransactionStatus.PENDING,
             description = "Test transfer",
-            email = "test@email.com"
+            email = TEST_EMAIL
         )
         val fromAccount = createAccountEntity(fromAccountId, 1000.0)
         val toAccount = createAccountEntity(toAccountId, 500.0)
@@ -182,7 +188,7 @@ class TransactionEventConsumerTest {
             toAccountId = toAccountId,
             currency = "USD",
             status = TransactionStatus.PENDING,
-            description = "Test deposit"
+            description = TEST_DEPOSIT_DESCRIPTION
         )
         whenever(accountRepository.findById(toAccountId)).thenReturn(Optional.empty())
 
@@ -190,7 +196,7 @@ class TransactionEventConsumerTest {
         consumer.listen(event)
 
         // THEN
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test
@@ -213,7 +219,7 @@ class TransactionEventConsumerTest {
         consumer.listen(event)
 
         // THEN
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test
@@ -227,14 +233,14 @@ class TransactionEventConsumerTest {
             toAccountId = null,
             currency = "USD",
             status = TransactionStatus.PENDING,
-            description = "Test deposit"
+            description = TEST_DEPOSIT_DESCRIPTION
         )
 
         // WHEN
         consumer.listen(event)
 
         // THEN
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test
@@ -255,7 +261,7 @@ class TransactionEventConsumerTest {
         consumer.listen(event)
 
         // THEN
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test
@@ -276,7 +282,7 @@ class TransactionEventConsumerTest {
         consumer.listen(event)
 
         // THEN
-        verify(kafkaTemplate).send(eq("transactions.events"), eq(transactionId.toString()), any())
+        verify(kafkaTemplate).send(eq(TOPIC), eq(transactionId.toString()), any())
     }
 
     @Test

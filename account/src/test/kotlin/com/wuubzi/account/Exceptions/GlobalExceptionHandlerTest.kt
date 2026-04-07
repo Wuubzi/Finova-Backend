@@ -21,6 +21,10 @@ import kotlin.test.assertEquals
 @ExtendWith(MockitoExtension::class)
 class GlobalExceptionHandlerTest {
 
+    companion object {
+        private const val VALIDATION_FAILED_MESSAGE = "Validation failed"
+    }
+
     @Mock
     lateinit var dateFormatter: DateFormatter
 
@@ -134,14 +138,14 @@ class GlobalExceptionHandlerTest {
     @Test
     fun shouldHandleValidationException() {
         // GIVEN
-        val ex = ValidationException("Validation failed")
+        val ex = ValidationException(VALIDATION_FAILED_MESSAGE)
 
         // WHEN
         val response = handler.handleValidationException(ex)
 
         // THEN
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
-        assertEquals("Validation failed", response.body?.message)
+        assertEquals(VALIDATION_FAILED_MESSAGE, response.body?.message)
         assertEquals(400, response.body?.code)
     }
 
@@ -155,7 +159,7 @@ class GlobalExceptionHandlerTest {
 
         // THEN
         assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
-        assertEquals("Validation failed", response.body?.message)
+        assertEquals(VALIDATION_FAILED_MESSAGE, response.body?.message)
     }
 
     @Test

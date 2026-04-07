@@ -79,24 +79,19 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
 	systemProperty("spring.flyway.enabled", "false")
 	systemProperty("spring.datasource.url", "jdbc:h2:mem:testdb")
 	systemProperty("spring.datasource.driver-class-name", "org.h2.Driver")
 	systemProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect")
 }
 
-
-tasks.withType<Test> {
-	useJUnitPlatform()
-	finalizedBy(tasks.jacocoTestReport)
-}
 tasks.jacocoTestReport {
 	dependsOn(tasks.withType<Test>())
 	reports {
 		xml.required.set(true)
 		html.required.set(true)
 	}
-
 
 	classDirectories.setFrom(
 		files(classDirectories.files.map {

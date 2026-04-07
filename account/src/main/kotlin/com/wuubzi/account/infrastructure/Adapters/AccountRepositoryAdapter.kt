@@ -16,6 +16,7 @@ class AccountRepositoryAdapter(
 ): AccountRepositoryPort {
     override fun save(account: AccountModel)  = accountRepository.save(account.toEntity()).toDomain()
     override fun findByUserId(userId: UUID): AccountModel? = accountRepository.findByUserId(userId)?.toDomain()
+    override fun findByAccountNumber(accountNumber: String): AccountModel? = accountRepository.findByAccountNumber(accountNumber)?.toDomain()
     @Transactional
     override fun deleteByUserId(userId: UUID) = accountRepository.deleteByUserId(userId)
 

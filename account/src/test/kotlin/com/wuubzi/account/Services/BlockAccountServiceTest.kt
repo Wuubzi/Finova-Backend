@@ -1,6 +1,7 @@
 package com.wuubzi.account.application.Services
 
 import com.wuubzi.account.application.Ports.out.AccountRepositoryPort
+import com.wuubzi.account.application.Ports.out.CachePort
 import com.wuubzi.account.domain.models.AccountModel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,6 +24,9 @@ class BlockAccountServiceTest {
 
     @Mock
     lateinit var accountRepository: AccountRepositoryPort
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     @InjectMocks
     lateinit var blockAccountService: BlockAccountService
@@ -50,7 +54,9 @@ class BlockAccountServiceTest {
     fun shouldBlockAccountSuccessfully() {
         // GIVEN: Una cuenta activa
         val existingAccount = createMockAccount(status = "ACTIVE")
+        val blockedAccount = existingAccount.copy(status = "BLOCKED")
         whenever(accountRepository.findByUserId(userId)).thenReturn(existingAccount)
+        whenever(accountRepository.save(argThat { this.status == "BLOCKED" })).thenReturn(blockedAccount)
 
         // WHEN
         blockAccountService.blockAccount(userId)

@@ -6,6 +6,7 @@ import com.wuubzi.account.application.DTOS.Response.Response
 import com.wuubzi.account.application.Ports.`in`.BlockAccountUseCase
 import com.wuubzi.account.application.Ports.`in`.CreateAccountUseCase
 import com.wuubzi.account.application.Ports.`in`.DeleteAccountUseCase
+import com.wuubzi.account.application.Ports.`in`.GetAccountByAccountNumberUseCase
 import com.wuubzi.account.application.Ports.`in`.GetAccountUseCase
 import com.wuubzi.account.application.Ports.`in`.GetBalanceAccountUseCase
 import com.wuubzi.account.application.Ports.`in`.UnBlockAccountUseCase
@@ -18,6 +19,7 @@ import org.apache.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -35,6 +37,7 @@ class AccountController(
     private val getBalanceAccountUseCase: GetBalanceAccountUseCase,
     private val updateAccountUseCase: UpdateAccountUseCase,
     private val getAccountUseCase: GetAccountUseCase,
+    private val getAccountByAccountNumberUseCase: GetAccountByAccountNumberUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val dateFormatter: DateFormatter,
 ) {
@@ -42,6 +45,11 @@ class AccountController(
     @GetMapping
     fun getAccount(@RequestHeader("X-User-Id") userId: UUID): ResponseEntity<AccountModel> {
         return ResponseEntity.status(HttpStatus.SC_OK).body(getAccountUseCase.getAccount(userId))
+    }
+
+    @GetMapping("/{accountNumber}")
+    fun getAccountByAccountNumber(@PathVariable accountNumber: String): ResponseEntity<AccountModel> {
+        return ResponseEntity.status(HttpStatus.SC_OK).body(getAccountByAccountNumberUseCase.getAccountByAccountNumber(accountNumber))
     }
     @PostMapping
     fun createAccount(

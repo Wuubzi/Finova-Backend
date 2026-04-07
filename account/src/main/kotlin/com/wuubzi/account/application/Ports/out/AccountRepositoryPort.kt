@@ -7,5 +7,6 @@ import java.util.UUID
 interface AccountRepositoryPort {
     fun save(account: AccountModel): AccountModel
     fun findByUserId(userId: UUID): AccountModel?
+    fun findByAccountNumber(accountNumber: String): AccountModel?
     fun deleteByUserId(userId: UUID)
 }

@@ -2,6 +2,7 @@ package com.wuubzi.account.application.Services
 
 import com.wuubzi.account.application.DTOS.Request.AccountRequestDTO
 import com.wuubzi.account.application.Ports.out.AccountRepositoryPort
+import com.wuubzi.account.application.Ports.out.CachePort
 import com.wuubzi.account.domain.models.AccountModel
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -18,6 +19,9 @@ class UpdateAccountServiceTest {
 
     @Mock
     lateinit var accountRepository: AccountRepositoryPort
+
+    @Mock
+    lateinit var cachePort: CachePort
 
     @InjectMocks
     lateinit var updateAccountService: UpdateAccountService
@@ -53,6 +57,7 @@ class UpdateAccountServiceTest {
         )
 
         whenever(accountRepository.findByUserId(userId)).thenReturn(existingAccount)
+        whenever(accountRepository.save(any())).thenAnswer { it.arguments[0] as AccountModel }
 
         // WHEN
         updateAccountService.updateAccount(userId, updateRequest)

@@ -10,6 +10,7 @@ import com.wuubzi.user.domain.Models.User
 import com.wuubzi.user.utils.DateFormatter
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,7 +40,7 @@ class UserController(
     @PutMapping("me")
     fun updateUser(
         @RequestHeader("X-User-Id") userId: UUID,
-        @RequestBody userRequest: UpdateRequestDTO,
+        @Valid @RequestBody userRequest: UpdateRequestDTO,
         request: HttpServletRequest
     ): ResponseEntity<Response> {
         updateUserUseCase.updateUser(userId, userRequest)

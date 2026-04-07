@@ -1,6 +1,7 @@
 package com.wuubzi.account.infrastructure.Config
 
 
+    import com.wuubzi.account.application.DTOS.Events.TransactionEvent
 import com.wuubzi.account.application.DTOS.Events.UserDeletedEvent
 import com.wuubzi.account.application.DTOS.Events.UserRequestEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -9,16 +10,20 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.annotation.EnableKafka
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
 import org.springframework.kafka.core.*
 import org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+import org.springframework.kafka.support.serializer.JacksonJsonSerializer
 
+@EnableKafka
 @Configuration
 class Kafka {
 
     companion object {
         private const val BOOTSTRAP_SERVERS = "localhost:9092"
         private const val GROUP_ID = "account-service"
+        const val TOPIC = "transactions.events"
     }
 
     // ==================== PRODUCER ====================
@@ -26,7 +31,7 @@ class Kafka {
     fun producerConfigs(): Map<String, Any> = mapOf(
         ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
-        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java
+        ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonJsonSerializer::class.java
     )
 
     @Bean
@@ -89,7 +94,36 @@ class Kafka {
     @Bean
     fun userDeletedKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, UserDeletedEvent> {
         return ConcurrentKafkaListenerContainerFactory<String, UserDeletedEvent>().apply {
-            setConsumerFactory(userDeletedConsumerFactory())  // ← Usa el setter
+            setConsumerFactory(userDeletedConsumerFactory())
+            setConcurrency(3)
+            containerProperties.pollTimeout = 3000
+        }
+    }
+
+    // ==================== CONSUMER: TRANSACTION EVENTS ====================
+    @Bean
+    fun transactionEventConsumerFactory(): ConsumerFactory<String, TransactionEvent> {
+        val props = mapOf(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+            ConsumerConfig.GROUP_ID_CONFIG to GROUP_ID,
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java,
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG to "earliest",
+            JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS to false,
+            JacksonJsonDeserializer.VALUE_DEFAULT_TYPE to TransactionEvent::class.java.name,
+            JacksonJsonDeserializer.TRUSTED_PACKAGES to "*"
+        )
+        return DefaultKafkaConsumerFactory(
+            props,
+            StringDeserializer(),
+            JacksonJsonDeserializer(TransactionEvent::class.java)
+        )
+    }
+
+    @Bean
+    fun transactionEventKafkaListenerContainerFactory(): ConcurrentKafkaListenerContainerFactory<String, TransactionEvent> {
+        return ConcurrentKafkaListenerContainerFactory<String, TransactionEvent>().apply {
+            setConsumerFactory(transactionEventConsumerFactory())
             setConcurrency(3)
             containerProperties.pollTimeout = 3000
         }

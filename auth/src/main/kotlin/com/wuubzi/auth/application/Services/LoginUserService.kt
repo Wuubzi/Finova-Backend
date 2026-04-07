@@ -56,7 +56,7 @@ class LoginUserService(
             }
             return TokenResponse(
 
-                accessToken = jwtPort.generateToken(user.userId),
+                accessToken = jwtPort.generateToken(user.userId, user.email),
                 refreshToken = refreshToken
             )
         } else {

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.BindingResult
@@ -32,6 +31,9 @@ class GlobalExceptionHandlerTest {
 
     @Mock
     lateinit var bindingResult: BindingResult
+
+    @Mock
+    lateinit var noResourceFoundException: NoResourceFoundException
 
     private lateinit var handler: GlobalExceptionHandler
 
@@ -85,10 +87,10 @@ class GlobalExceptionHandlerTest {
     @Test
     fun shouldHandleNoResourceFoundException() {
         // GIVEN
-        val ex = NoResourceFoundException(HttpMethod.GET, "test-resource")
+        whenever(noResourceFoundException.message).thenReturn("No static resource test-resource.")
 
         // WHEN
-        val response = handler.handleNoResourceFoundException(ex)
+        val response = handler.handleNoResourceFoundException(noResourceFoundException)
 
         // THEN
         assertEquals(HttpStatus.NOT_FOUND, response.statusCode)

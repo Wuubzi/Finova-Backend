@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.validation.BindingResult
@@ -84,7 +85,7 @@ class GlobalExceptionHandlerTest {
     @Test
     fun shouldHandleNoResourceFoundException() {
         // GIVEN
-        val ex = NoResourceFoundException("GET", "test-resource")
+        val ex = NoResourceFoundException(HttpMethod.GET, "test-resource")
 
         // WHEN
         val response = handler.handleNoResourceFoundException(ex)

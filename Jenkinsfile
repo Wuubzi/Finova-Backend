@@ -192,7 +192,7 @@ DEPLOY_SCRIPT
                 branch 'main'
             }
             options {
-                timeout(time: 5, unit: 'MINUTES')
+                timeout(time: 10, unit: 'MINUTES')
             }
             steps {
                 echo "🏥 Verificando salud de los servicios..."
@@ -201,7 +201,7 @@ DEPLOY_SCRIPT
                         ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST bash -s <<'HEALTH_SCRIPT'
                             set -e
 
-                            MAX_RETRIES=10
+                            MAX_RETRIES=20
                             RETRY_INTERVAL=15
 
                             check_service() {

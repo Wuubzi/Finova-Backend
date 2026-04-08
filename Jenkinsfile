@@ -138,17 +138,15 @@ pipeline {
             }
             steps {
                 echo "🚀 Desplegando en EC2..."
-                sshagent(credentials: ['ec2-ssh-key']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                     sh '''
-                        scp -o StrictHostKeyChecking=no docker-compose.yml $EC2_USER@$EC2_HOST:$DEPLOY_DIR/docker-compose.yml
+                        chmod 600 $SSH_KEY
 
-                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
-                            ECR_REGISTRY=$ECR_REGISTRY \
-                            IMAGE_TAG=$IMAGE_TAG \
-                            AWS_REGION=$AWS_REGION \
-                            'bash -s' << 'DEPLOY_SCRIPT'
+                        scp -o StrictHostKeyChecking=no -i $SSH_KEY docker-compose.yml $EC2_USER@$EC2_HOST:$DEPLOY_DIR/docker-compose.yml
+
+                        ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST bash -s <<DEPLOY_SCRIPT
                             set -e
-                            cd $HOME/finova
+                            cd \$HOME/finova
 
                             echo "🔑 Login a ECR..."
                             aws ecr get-login-password --region $AWS_REGION | \
@@ -189,26 +187,26 @@ DEPLOY_SCRIPT
             }
             steps {
                 echo "🏥 Verificando salud de los servicios..."
-                sshagent(credentials: ['ec2-ssh-key']) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST 'bash -s' << 'HEALTH_SCRIPT'
+                        ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST bash -s <<'HEALTH_SCRIPT'
                             set -e
 
                             MAX_RETRIES=10
                             RETRY_INTERVAL=15
 
                             check_service() {
-                                local service_name=\$1
-                                local port=\$2
-                                for i in \$(seq 1 \$MAX_RETRIES); do
-                                    if curl -sf http://localhost:\${port}/actuator/health > /dev/null 2>&1; then
-                                        echo "✅ \${service_name} is healthy"
+                                local service_name=$1
+                                local port=$2
+                                for i in $(seq 1 $MAX_RETRIES); do
+                                    if curl -sf http://localhost:${port}/actuator/health > /dev/null 2>&1; then
+                                        echo "✅ ${service_name} is healthy"
                                         return 0
                                     fi
-                                    echo "⏳ Waiting for \${service_name}... (\$i/\$MAX_RETRIES)"
-                                    sleep \$RETRY_INTERVAL
+                                    echo "⏳ Waiting for ${service_name}... ($i/$MAX_RETRIES)"
+                                    sleep $RETRY_INTERVAL
                                 done
-                                echo "❌ \${service_name} failed health check!"
+                                echo "❌ ${service_name} failed health check!"
                                 return 1
                             }
 

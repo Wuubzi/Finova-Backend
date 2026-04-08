@@ -3,31 +3,52 @@ services:
   eureka-service:
     image: ${ECR_REGISTRY}/finova/eureka-service:${IMAGE_TAG}
     restart: always
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
     ports:
       - "8761:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   config-service:
     image: ${ECR_REGISTRY}/finova/config-service:${IMAGE_TAG}
     restart: always
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SERVER_PORT: 8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
     depends_on:
       eureka-service:
         condition: service_healthy
     ports:
-      - "8888:8080"
+      - "8888:8888"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   gateway-service:
     image: ${ECR_REGISTRY}/finova/gateway-service:${IMAGE_TAG}
     restart: always
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       eureka-service:
         condition: service_healthy
@@ -35,6 +56,10 @@ services:
         condition: service_healthy
     ports:
       - "8000:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   # ==================== DATABASES ====================
   auth-db:
@@ -49,6 +74,10 @@ services:
       - "5433:5432"
     volumes:
       - auth-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   user-db:
     image: postgres:16
@@ -62,6 +91,10 @@ services:
       - "5436:5432"
     volumes:
       - user-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   account-db:
     image: postgres:16
@@ -75,6 +108,10 @@ services:
       - "5434:5432"
     volumes:
       - account-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   transaction-db:
     image: postgres:16
@@ -88,6 +125,10 @@ services:
       - "5435:5432"
     volumes:
       - transaction-data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   # ==================== MESSAGING & CACHE ====================
   kafka:
@@ -110,13 +151,19 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
     volumes:
       - kafka_data:/var/lib/kafka/data
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
-      interval: 15s
+      interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 60s
 
   redis:
     image: redis:latest
@@ -126,6 +173,10 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -137,12 +188,26 @@ services:
     image: ${ECR_REGISTRY}/finova/auth-service:${IMAGE_TAG}
     restart: always
     environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+      # Database
+      DB_NAME: auth_db
+      DB_USERNAME: ${AUTH_DB_USER:-auth_user}
+      DB_PASSWORD: ${AUTH_DB_PASS:-auth_pass}
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/auth_db
       SPRING_DATASOURCE_USERNAME: ${AUTH_DB_USER:-auth_user}
       SPRING_DATASOURCE_PASSWORD: ${AUTH_DB_PASS:-auth_pass}
+      # Infrastructure
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATA_REDIS_HOST: redis
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      # Secrets
+      JWT_SECRET: ${JWT_SECRET}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY}
     depends_on:
       auth-db:
         condition: service_started
@@ -152,19 +217,34 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      config-service:
+        condition: service_healthy
     ports:
       - "8081:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   user-service:
     image: ${ECR_REGISTRY}/finova/user-service:${IMAGE_TAG}
     restart: always
     environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+      # Database
+      DB_NAME: user_db
+      DB_USERNAME: ${USER_DB_USER:-user_user}
+      DB_PASSWORD: ${USER_DB_PASS:-user_pass}
       SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user_db
       SPRING_DATASOURCE_USERNAME: ${USER_DB_USER:-user_user}
       SPRING_DATASOURCE_PASSWORD: ${USER_DB_PASS:-user_pass}
+      # Infrastructure
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATA_REDIS_HOST: redis
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      # Secrets
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       user-db:
         condition: service_started
@@ -174,19 +254,34 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      config-service:
+        condition: service_healthy
     ports:
       - "8082:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   account-service:
     image: ${ECR_REGISTRY}/finova/account-service:${IMAGE_TAG}
     restart: always
     environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+      # Database
+      DB_NAME: account_db
+      DB_USERNAME: ${ACCOUNT_DB_USER:-account_user}
+      DB_PASSWORD: ${ACCOUNT_DB_PASS:-account_pass}
       SPRING_DATASOURCE_URL: jdbc:postgresql://account-db:5432/account_db
       SPRING_DATASOURCE_USERNAME: ${ACCOUNT_DB_USER:-account_user}
       SPRING_DATASOURCE_PASSWORD: ${ACCOUNT_DB_PASS:-account_pass}
+      # Infrastructure
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATA_REDIS_HOST: redis
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      # Secrets
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       account-db:
         condition: service_started
@@ -196,19 +291,34 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      config-service:
+        condition: service_healthy
     ports:
       - "8083:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   transaction-service:
     image: ${ECR_REGISTRY}/finova/transaction-service:${IMAGE_TAG}
     restart: always
     environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
+      # Database
+      DB_NAME: transaction_db
+      DB_USERNAME: ${TRANSACTION_DB_USER:-transaction_user}
+      DB_PASSWORD: ${TRANSACTION_DB_PASS:-transaction_pass}
       SPRING_DATASOURCE_URL: jdbc:postgresql://transaction-db:5432/transaction_db
       SPRING_DATASOURCE_USERNAME: ${TRANSACTION_DB_USER:-transaction_user}
       SPRING_DATASOURCE_PASSWORD: ${TRANSACTION_DB_PASS:-transaction_pass}
+      # Infrastructure
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATA_REDIS_HOST: redis
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      # Secrets
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       transaction-db:
         condition: service_started
@@ -218,22 +328,39 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      config-service:
+        condition: service_healthy
     ports:
       - "8084:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
   notification-service:
     image: ${ECR_REGISTRY}/finova/notification-service:${IMAGE_TAG}
     restart: always
     environment:
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service:8080/eureka/
+      # Email
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
     depends_on:
       kafka:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      config-service:
+        condition: service_healthy
     ports:
       - "8085:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
 volumes:
   auth-data:

@@ -136,6 +136,9 @@ pipeline {
             when {
                 branch 'main'
             }
+            options {
+                timeout(time: 15, unit: 'MINUTES')
+            }
             steps {
                 echo "🚀 Desplegando en EC2..."
                 withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
@@ -152,8 +155,11 @@ pipeline {
                             aws ecr get-login-password --region $AWS_REGION | \
                                 docker login --username AWS --password-stdin $ECR_REGISTRY
 
-                            export ECR_REGISTRY=$ECR_REGISTRY
-                            export IMAGE_TAG=$IMAGE_TAG
+                            # Inyectar variables de ECR en el .env sin borrar las existentes
+                            sed -i '/^ECR_REGISTRY=/d' .env 2>/dev/null || true
+                            sed -i '/^IMAGE_TAG=/d' .env 2>/dev/null || true
+                            echo "ECR_REGISTRY=$ECR_REGISTRY" >> .env
+                            echo "IMAGE_TAG=$IMAGE_TAG" >> .env
 
                             echo "⬇️ Pulling nuevas imágenes..."
                             docker compose pull
@@ -184,6 +190,9 @@ DEPLOY_SCRIPT
         stage('Health Check') {
             when {
                 branch 'main'
+            }
+            options {
+                timeout(time: 5, unit: 'MINUTES')
             }
             steps {
                 echo "🏥 Verificando salud de los servicios..."

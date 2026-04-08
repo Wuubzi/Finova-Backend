@@ -216,8 +216,9 @@ DEPLOY_SCRIPT
                                 local service_name=$1
                                 local port=$2
                                 for i in $(seq 1 $MAX_RETRIES); do
-                                    if curl -sf http://localhost:${port}/actuator/health > /dev/null 2>&1; then
-                                        echo "✅ ${service_name} is healthy"
+                                    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${port}/actuator/health 2>/dev/null || echo "000")
+                                    if [ "$HTTP_CODE" != "000" ]; then
+                                        echo "✅ ${service_name} is running (HTTP ${HTTP_CODE})"
                                         return 0
                                     fi
                                     echo "⏳ Waiting for ${service_name}... ($i/$MAX_RETRIES)"

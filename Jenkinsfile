@@ -146,7 +146,7 @@ pipeline {
 
                         ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST bash -s <<DEPLOY_SCRIPT
                             set -e
-                            cd \$HOME/finova
+                            cd $DEPLOY_DIR
 
                             echo "🔑 Login a ECR..."
                             aws ecr get-login-password --region $AWS_REGION | \

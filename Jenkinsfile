@@ -172,9 +172,14 @@ pipeline {
                             sleep 15
 
                             docker compose up -d config-service
-                            sleep 10
+                            sleep 15
 
-                            docker compose up -d auth-service user-service account-service transaction-service notification-service gateway-service
+                            echo "🚀 Arrancando microservicios..."
+                            docker compose up -d auth-service user-service account-service transaction-service notification-service
+                            sleep 30
+
+                            echo "🌐 Arrancando gateway..."
+                            docker compose up -d gateway-service
 
                             echo "🧹 Limpiando imágenes antiguas..."
                             docker image prune -f
@@ -216,17 +221,19 @@ DEPLOY_SCRIPT
                                     sleep $RETRY_INTERVAL
                                 done
                                 echo "❌ ${service_name} failed health check!"
+                                echo "📋 Logs de ${service_name}:"
+                                cd /home/ec2-user/finova && docker compose logs --tail=50 ${service_name} 2>/dev/null || true
                                 return 1
                             }
 
                             check_service "eureka-service"       8761
                             check_service "config-service"       8888
-                            check_service "gateway-service"      8000
                             check_service "auth-service"         8081
                             check_service "user-service"         8082
                             check_service "account-service"      8083
                             check_service "transaction-service"  8084
                             check_service "notification-service" 8085
+                            check_service "gateway-service"      8000
 
                             echo "🎉 Todos los servicios están saludables!"
 HEALTH_SCRIPT

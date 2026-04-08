@@ -35,6 +35,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webmvc")
 	implementation("org.springframework.boot:spring-boot-starter-kafka")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:${property("awsVersion")}"))
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("io.awspring.cloud:spring-cloud-aws-starter-s3:${property("awsVersion")}")

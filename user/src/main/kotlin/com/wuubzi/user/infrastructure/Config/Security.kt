@@ -36,7 +36,10 @@ class Security(
         http
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .authorizeHttpRequests {it.anyRequest().authenticated() }
+            .authorizeHttpRequests {
+                it.requestMatchers("/actuator/**").permitAll()
+                it.anyRequest().authenticated()
+            }
             .exceptionHandling {
                 it.authenticationEntryPoint(authenticationEntryPoint)
             }

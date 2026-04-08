@@ -197,7 +197,7 @@ DEPLOY_SCRIPT
                 branch 'main'
             }
             options {
-                timeout(time: 10, unit: 'MINUTES')
+                timeout(time: 15, unit: 'MINUTES')
             }
             steps {
                 echo "🏥 Verificando salud de los servicios..."
@@ -205,6 +205,9 @@ DEPLOY_SCRIPT
                     sh '''
                         ssh -o StrictHostKeyChecking=no -i $SSH_KEY $EC2_USER@$EC2_HOST bash -s <<'HEALTH_SCRIPT'
                             set -e
+
+                            echo "⏳ Esperando 90s para que los servicios arranquen..."
+                            sleep 90
 
                             MAX_RETRIES=20
                             RETRY_INTERVAL=15

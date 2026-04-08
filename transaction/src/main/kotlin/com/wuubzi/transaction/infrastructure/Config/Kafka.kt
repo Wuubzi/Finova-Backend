@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.annotation.EnableKafka
@@ -21,10 +22,12 @@ import org.springframework.kafka.support.serializer.JacksonJsonSerializer
 
 @EnableKafka
 @Configuration
-class Kafka {
+class Kafka(
+    @Value("\${spring.kafka.bootstrap-servers:localhost:9092}")
+    private val bootstrapServers: String
+) {
 
     companion object {
-        private const val BOOTSTRAP_SERVERS = "localhost:9092"
         private const val GROUP_ID = "transaction-service"
         const val TOPIC = "transactions.events"
     }
@@ -40,7 +43,7 @@ class Kafka {
     // ==================== PRODUCER ====================
     @Bean
     fun producerConfigs(): Map<String, Any> = mapOf(
-        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to StringSerializer::class.java,
         ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to JacksonJsonSerializer::class.java
     )
@@ -57,7 +60,7 @@ class Kafka {
     @Bean
     fun transactionEventConsumerFactory(): ConsumerFactory<String, TransactionEvent> {
         val props = mapOf<String, Any>(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ConsumerConfig.GROUP_ID_CONFIG to GROUP_ID,
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java,

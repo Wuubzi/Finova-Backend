@@ -4,6 +4,7 @@ import com.wuubzi.notification.DTOS.Events.RecoverPasswordRequest
 import com.wuubzi.notification.DTOS.Events.TransactionEvent
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.kafka.annotation.EnableKafka
@@ -14,17 +15,16 @@ import org.springframework.kafka.support.serializer.JacksonJsonDeserializer
 
 @EnableKafka
 @Configuration
-class Kafka {
-
-    companion object {
-        private const val BOOTSTRAP_SERVERS = "localhost:9092"
-    }
+class Kafka(
+    @Value("\${spring.kafka.bootstrap-servers:localhost:9092}")
+    private val bootstrapServers: String
+) {
 
     // ==================== CONSUMER: RECOVER PASSWORD ====================
     @Bean
     fun recoverPasswordConsumerFactory(): ConsumerFactory<String, RecoverPasswordRequest> {
         val props = mapOf<String, Any>(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ConsumerConfig.GROUP_ID_CONFIG to "notification-service-v2",
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java,
@@ -49,7 +49,7 @@ class Kafka {
     @Bean
     fun transactionEventConsumerFactory(): ConsumerFactory<String, TransactionEvent> {
         val props = mapOf<String, Any>(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to BOOTSTRAP_SERVERS,
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ConsumerConfig.GROUP_ID_CONFIG to "notification-service",
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to JacksonJsonDeserializer::class.java,

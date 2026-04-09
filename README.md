@@ -1,6 +1,4 @@
-﻿<p align="center">
-  <img src="docs/images/finova-logo.png" alt="Finova Logo" width="200"/>
-</p>
+﻿
 
 <h1 align="center">💰 Finova — Banking Microservices Platform</h1>
 

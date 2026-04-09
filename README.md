@@ -563,26 +563,21 @@ The Notification Service is an **event-driven consumer** that listens to Kafka t
 <details>
 <summary>📸 AWS EC2 — Instance Running</summary>
 
-![EC2 Instance](docs/images/aws-ec2-instance.png)
+![img.png](images/ec2.png)
 </details>
 
 <details>
 <summary>📸 AWS ECR — Docker Repositories</summary>
 
-![ECR Repositories](docs/images/aws-ecr-repositories.png)
+![img.png](ecr_repository.png)
 </details>
 
 <details>
 <summary>📸 AWS S3 — Profile Images Bucket</summary>
 
-![S3 Bucket](docs/images/aws-s3-bucket.png)
+![img.png](images/s3_bucket.png)
 </details>
 
-<details>
-<summary>📸 AWS Security Groups — Inbound Rules</summary>
-
-![Security Groups](docs/images/aws-security-groups.png)
-</details>
 
 ---
 

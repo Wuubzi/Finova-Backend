@@ -569,7 +569,7 @@ The Notification Service is an **event-driven consumer** that listens to Kafka t
 <details>
 <summary>📸 AWS ECR — Docker Repositories</summary>
 
-![img.png](ecr_repository.png)
+![img.png](images/ecr_repository.png)
 </details>
 
 <details>

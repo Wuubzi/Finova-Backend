@@ -10,7 +10,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 400M
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -33,7 +33,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 400M
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8888/actuator/health"]
       interval: 30s
@@ -60,7 +60,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 400M
 
   # ==================== DATABASES ====================
   auth-db:
@@ -189,7 +189,7 @@ services:
     image: ${ECR_REGISTRY}/finova/auth-service:${IMAGE_TAG}
     restart: always
     environment:
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx320m"
       SERVER_PORT: 8080
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       # Database
@@ -226,13 +226,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
   user-service:
     image: ${ECR_REGISTRY}/finova/user-service:${IMAGE_TAG}
     restart: always
     environment:
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx320m"
       SERVER_PORT: 8080
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       # Database
@@ -264,13 +264,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
   account-service:
     image: ${ECR_REGISTRY}/finova/account-service:${IMAGE_TAG}
     restart: always
     environment:
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx320m"
       SERVER_PORT: 8080
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       # Database
@@ -302,13 +302,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
   transaction-service:
     image: ${ECR_REGISTRY}/finova/transaction-service:${IMAGE_TAG}
     restart: always
     environment:
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx320m"
       SERVER_PORT: 8080
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       # Database
@@ -340,13 +340,13 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
   notification-service:
     image: ${ECR_REGISTRY}/finova/notification-service:${IMAGE_TAG}
     restart: always
     environment:
-      JAVA_OPTS: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx320m"
       SERVER_PORT: 8080
       SPRING_CONFIG_IMPORT: optional:configserver:http://config-service:8888
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -366,7 +366,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 512M
 
 volumes:
   auth-data:
